@@ -26,6 +26,8 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
         Offset the reference position to the SOSS acquisition position or not
     psffile: str
         An alternate path to the SOSS PSF image
+    throughput: float
+        The grism throughput value
 
     Returns
     -------
