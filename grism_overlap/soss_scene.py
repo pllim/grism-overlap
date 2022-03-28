@@ -18,7 +18,6 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
 
     Parameters
     ----------
-
     scene_image: sequence
         A numpy 2-d image (float) of an imaging scene to disperse.
         Must be the full 4231x4231 pixel work scene image
@@ -63,13 +62,10 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
     x1 = 137
     field_image[y1:y1 + 2048, x1:x1 + 2048] = field_image[y1:y1 + 2048, x1:x1 + 2048] * spotmask
 
-    # Convolve with the signal
+    # Convolve with the psf with the field
     outimage = signal.fftconvolve(field_image, psfimage, mode='same')
 
-    # Scale by the grism total throughput
-    outimage = outimage * throughput
-
-    return outimage
+    return outimage * throughput
 
 
 def get_gr700_psf(files=None):
