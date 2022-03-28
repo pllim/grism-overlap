@@ -2,11 +2,11 @@
 import os
 from setuptools import setup, find_packages
 
-REQUIRES = ['tkinter', 'numpy', 'scipy', 'matplotlib', 'pysiaf', 'astropy']
+REQUIRES = ['numpy', 'scipy', 'matplotlib', 'pysiaf', 'astropy']
 
 FILES = []
 for root, _, files in os.walk("grism_overlap"):
-    FILES += [os.path.join(root.replace("grism_overlap/", ""), fname)
+    FILES += [os.path.join(root, fname)
               for fname in files if not fname.endswith(".py") and not fname.endswith(".pyc")]
 
 setup(
@@ -17,11 +17,11 @@ setup(
         ".",
         exclude=["*.tests"]),
     package_data={
-        'exoctk': FILES},
+        'grism_overlap': FILES},
     install_requires=REQUIRES,
     author='Kevin Volk',
     license='MIT',
-    url='https://github.com/KevinVolkSTScI/grism_overlap',
+    url='https://github.com/spacetelescope/grism_overlap',
     long_description='',
     zip_safe=True,
     use_2to3=False)
