@@ -41,13 +41,13 @@ range_check:   given an angle in degrees, return the equivalent angle in the
                primary range 0 to 360 degrees
 
 """
-
 import math
-# import matplotlib
+
 import tkinter as Tk
 import tkinter.filedialog
 import numpy
 from astropy.io import fits
+
 
 def get_subimage(image, zoom):
     """
@@ -86,8 +86,7 @@ def get_subimage(image, zoom):
         npixelx = 1
     if npixely == 0:
         npixely = 1
-    subimage = numpy.copy(image[
-        zoom[2]:zoom[2]+npixely, zoom[1]:zoom[1]+npixelx])
+    subimage = numpy.copy(image[zoom[2]:zoom[2] + npixely, zoom[1]:zoom[1] + npixelx])
     return subimage
 
 
@@ -97,20 +96,11 @@ def save_data_set_values(xvalues, yvalues, labelstring=None):
 
     Parameters
     ----------
-
-        xvalues :  A numpy array of float or integer values, the x plot values
-
-        yvalues :  A numpy array of float or integer values, the y plot values
-                   (the same length as xvalues, by assumption)
-
-        labelstring :  An optional string to write to the top of the file.
-                       If the value is None, nothing is written.
-
-    Returns
-    -------
-
-        None
-
+    xvalues :  A numpy array of float or integer values, the x plot values
+    yvalues :  A numpy array of float or integer values, the y plot values
+               (the same length as xvalues, by assumption)
+    labelstring :  An optional string to write to the top of the file.
+                   If the value is None, nothing is written.
     """
     outfilename = tkinter.filedialog.asksaveasfilename()
     outfile = open(outfilename, 'w')
@@ -127,17 +117,10 @@ def save_png_figure(fig):
 
     Parameters
     ----------
-        fig :   A matplotlib Figure instance, the figure to be
-                written out
-
-    Returns
-    -------
-
-        None
-
+    fig :   A matplotlib Figure instance, the figure to be
+            written out
     """
-    outfile = tkinter.filedialog.asksaveasfilename(filetypes=[('PNG',
-                                                               '.png')])
+    outfile = tkinter.filedialog.asksaveasfilename(filetypes=[('PNG', '.png')])
     if isinstance(outfile, type('string')):
         s1 = outfile.split('.')
     if 'png' not in s1[-1]:
@@ -151,17 +134,10 @@ def save_ps_figure(fig):
 
     Parameters
     ----------
-        fig :  A matplotlib Figure instance, the figure to be
-               written out
-
-    Returns
-    -------
-
-        None
-
+    fig :  A matplotlib Figure instance, the figure to be
+           written out
     """
-    outfile = tkinter.filedialog.asksaveasfilename(filetypes=[('PS',
-                                                               '.ps')])
+    outfile = tkinter.filedialog.asksaveasfilename(filetypes=[('PS', '.ps')])
     if isinstance(outfile, type('string')):
         s1 = outfile.split('.')
         if 'ps' not in s1[-1]:
@@ -184,31 +160,30 @@ def hybrid_transform(datavalues):
 
     Parameter
     ---------
-        datavalues :   A numpy array of numbers (real or integer), or a
-                       single float value
+    datavalues :   A numpy array of numbers (real or integer), or a
+                   single float value
 
     Returns
     -------
-        newdatavalues :   A numpy array of the same length as datavalues,
-                          with the transformed numbers, or a single float
-                          value with the transformed mumber
-
+    newdatavalues :   A numpy array of the same length as datavalues,
+                      with the transformed numbers, or a single float
+                      value with the transformed mumber
     """
     try:
         newdatavalues = datavalues.astype(numpy.float32)
         inds = numpy.where(numpy.abs(datavalues) < 10.)
-        newdatavalues[inds] = datavalues[inds]/10.
+        newdatavalues[inds] = datavalues[inds] / 10.
         inds = numpy.where(datavalues >= 10.)
         newdatavalues[inds] = numpy.log10(newdatavalues[inds])
         inds = numpy.where(datavalues <= -10.)
-        newdatavalues[inds] = -1.0*numpy.log10(numpy.abs(newdatavalues[inds]))
+        newdatavalues[inds] = -1.0 * numpy.log10(numpy.abs(newdatavalues[inds]))
     except Exception:
         if abs(datavalues) >= 10.:
             newdatavalues = math.log10(abs(datavalues))
             if datavalues < 0.:
-                newdatavalues = -1.*newdatavalues
+                newdatavalues = -1. * newdatavalues
         else:
-            newdatavalues = datavalues/10.
+            newdatavalues = datavalues / 10.
     return newdatavalues
 
 
@@ -223,23 +198,22 @@ def inverse_hybrid_transform(value):
 
     Parameters
     ----------
-        value :  A real number to be transformed back from the hybrid
-                 log scaling
+    value :  A real number to be transformed back from the hybrid
+             log scaling
 
     Returns
     -------
-        newvalue :   The associated value that maps to the given hybrid
-                     log value.
-
+    newvalue :   The associated value that maps to the given hybrid
+                 log value.
     """
     if value < 0.:
-        workvalue = -1.0*value
+        workvalue = -1.0 * value
         sign = -1.0
     else:
         workvalue = value
         sign = +1.0
     if workvalue < 1.0:
-        newvalue = 10.*workvalue
+        newvalue = 10. * workvalue
     else:
         newvalue = 10.**workvalue
     newvalue = sign * newvalue
@@ -258,21 +232,19 @@ def hybrid_labels(datavalues):
 
     Parameters
     ----------
-        datavalues :     A one-dimensional numpy array of float data values.
+    datavalues :     A one-dimensional numpy array of float data values.
 
     Returns
     -------
-        rangeout :  A list of the positions for the tick marks (floats).
-
-        ticksout :  A list of the tick labels (strings).
+    rangeout :  A list of the positions for the tick marks (floats).
+    ticksout :  A list of the tick labels (strings).
 
     Both the return values are used with set_xticks/set_xticklabels
     (main matplotlib) or xticks (pyplot) or the y axis equivalents.
     """
-    ticklabels = []
     datamax = numpy.max(datavalues)
     datamin = numpy.min(datavalues)
-    baserange = numpy.arange(-10, 12, 2)/10.0
+    baserange = numpy.arange(-10, 12, 2) / 10.0
     subvalues = numpy.arange(2, 11)
     subvalues = numpy.log10(subvalues)
     n1 = int(datamin)
@@ -280,18 +252,17 @@ def hybrid_labels(datavalues):
         n1 = n1 - 1
     n2 = int(datamax)
     if n1 < -1:
-        for loop in range(-1, n1-1, -1):
-            for n1 in range(len(subvalues)-1, -1, -1):
-                baserange = numpy.insert(baserange, 0, loop-subvalues[n1])
+        for loop in range(-1, n1 - 1, -1):
+            for n1 in range(len(subvalues) - 1, -1, -1):
+                baserange = numpy.insert(baserange, 0, loop - subvalues[n1])
     if n2 > 1:
-        for loop in range(1, n2+1):
+        for loop in range(1, n2 + 1):
             for n1 in range(len(subvalues)):
-                baserange = numpy.append(baserange, loop+subvalues[n1])
+                baserange = numpy.append(baserange, loop + subvalues[n1])
     ticklabels = []
     tickzero = None
     for loop in range(len(baserange)):
-        if (tickzero is None) and (datamin < baserange[loop]) and \
-           (datamax > baserange[loop]):
+        if (tickzero is None) and (datamin < baserange[loop]) and (datamax > baserange[loop]):
             tickzero = baserange[loop]
     for loop in range(len(baserange)):
         if baserange[loop] < datamin:
@@ -302,13 +273,11 @@ def hybrid_labels(datavalues):
             ticklabels.append('')
         else:
             if abs(baserange[loop]) < 1.1:
-                ticklabels.append('%.0f' % (baserange[loop]*10.0))
+                ticklabels.append('%.0f' % (baserange[loop] * 10.0))
             else:
-                if (baserange[loop] > 1.1) and (math.floor(
-                        baserange[loop]) == baserange[loop]):
+                if (baserange[loop] > 1.1) and (math.floor(baserange[loop]) == baserange[loop]):
                     ticklabels.append(r'$10^%d$' % (baserange[loop]))
-                elif (baserange[loop] < -1.1) and (math.floor(
-                        baserange[loop]) == baserange[loop]):
+                elif (baserange[loop] < -1.1) and (math.floor(baserange[loop]) == baserange[loop]):
                     ticklabels.append(r'$-10^%d$' % (abs(baserange[loop])))
                 else:
                     ticklabels.append('')
@@ -333,17 +302,11 @@ def parse_data_input_text(text):
     Returns
     -------
     xvalues : a list of float values, the x data values for a set
-
     dxvalues1 : a list of float values, the lower x error values for a set
-
     dxvalues2 : a list of float values, the upper x error values for a set
-
     yvalues : a list of float values, the y data values for a set
-
     dyvalues1 : a list of float values, the lower y error values for a set
-
     dyvalues2 : a list of float values, the upper y error values for a set
-
     errorflag : boolean value, flags whether the uncertaintes are defined
 
     """
@@ -397,8 +360,7 @@ def parse_data_input_text(text):
                 dxvalues2.append(0.0)
                 dyvalues1.append(0.0)
                 dyvalues2.append(0.0)
-    return xvalues, dxvalues1, dxvalues2, yvalues, dyvalues1, \
-        dyvalues2, errorflag
+    return xvalues, dxvalues1, dxvalues2, yvalues, dyvalues1, dyvalues2, errorflag
 
 
 def slope_calculation(xdata, ydata, yerrors=None):
@@ -413,12 +375,9 @@ def slope_calculation(xdata, ydata, yerrors=None):
 
     Parameters
     ----------
-
     xdata:  A one-dimensional numpy float or integer array of the x values
-
     ydata:  A one-dimensional numpy float or integer array of the y values,
             which must be the same length as the xdata array
-
     yerrors:  An optional one-dimensional numpy float array of the y value
               uncertainties, which must be the same length as the xdata array
               if defined.  If not defined, the values are set to a constant.
@@ -426,24 +385,17 @@ def slope_calculation(xdata, ydata, yerrors=None):
 
     Returns
     -------
-
     slope:           A float value, the best fit slope
-
     intercept:       A float value, the best fit intercept
-
     slopeerror:      A float value, the uncertainty in the best fit slope
                      (standard deviation estimate)
-
     intercepterror:  A float value, the uncertainty in the best fit intercept
                      (standard deviation estimate)
-
     covariance:      A float value, the covariance between the fit parameters
-
     correlation:     A float value, the correlation coefficient of the fit
-
     """
     if yerrors is None:
-        yerrors = ydata*0. + 1.
+        yerrors = ydata * 0. + 1.
     else:
         inds = numpy.where(yerrors > 0.)
         mean1 = numpy.mean(yerrors[inds])
@@ -452,44 +404,33 @@ def slope_calculation(xdata, ydata, yerrors=None):
     if (xdata.shape != ydata.shape) or (len(xdata.shape) > 1) or \
        (xdata.shape != yerrors.shape):
         return None, None, None, None, None, None
-    invvariance = 1./(yerrors*yerrors)
+    invvariance = 1. / (yerrors * yerrors)
     sum1 = numpy.sum(invvariance)
-    sum2 = numpy.sum(xdata*invvariance)
-    sum3 = numpy.sum(ydata*invvariance)
-    xmean = sum2/sum1
+    sum2 = numpy.sum(xdata * invvariance)
+    sum3 = numpy.sum(ydata * invvariance)
+    xmean = sum2 / sum1
     t1 = (xdata - xmean) / yerrors
-    sum4 = numpy.sum(t1*t1)
-    slope = numpy.sum(t1*ydata/yerrors)/sum4
-    intercept = (sum3 - (slope*sum2))/sum1
-    interceptvariance = (1. + (sum2*sum2)/(sum1*sum4))/sum1
-    slopevariance = 1./sum4
-    covariance = -1.*sum2/(sum1*sum4)
-    correlation = covariance/numpy.sqrt(slopevariance*interceptvariance)
-    return slope, intercept, math.sqrt(slopevariance), \
-        math.sqrt(interceptvariance), covariance, correlation
+    sum4 = numpy.sum(t1 * t1)
+    slope = numpy.sum(t1 * ydata / yerrors) / sum4
+    intercept = (sum3 - (slope * sum2)) / sum1
+    interceptvariance = (1. + (sum2 * sum2) / (sum1 * sum4)) / sum1
+    slopevariance = 1. / sum4
+    covariance = -1. * sum2 / (sum1 * sum4)
+    correlation = covariance / numpy.sqrt(slopevariance * interceptvariance)
+    return slope, intercept, math.sqrt(slopevariance), math.sqrt(interceptvariance), covariance, correlation
 
 
-def list_polynomial_fitpars(fit_type, fit_order, fitpars,
-                            filename='fit_values.txt'):
+def list_polynomial_fitpars(fit_type, fit_order, fitpars, filename='fit_values.txt'):
     """
     This code writes out the fit parameters to  an ascii output file
 
     Parameters
     ----------
     fit_type : integer variable, flags the function used in the fit
-
     fit_order : integer variable, gives the order of the fit function
-
     fitpars : numpy float array, the fit parameters
-
     filename : an optional string variable that gives the file name for the
                output; default is "fit_values.txt"
-
-    Returns
-    -------
-
-    None
-
     """
     outfile = open(filename, 'a')
     print('Order %d %s polynomial fit:' % (fit_order, fit_type), file=outfile)
@@ -514,22 +455,20 @@ def line_range(lines, ind1, comment_flag='#'):
 
     Parameters
     ----------
-        lines :  A list of input lines (assumed to be from the readlines()
-                 function)
-
-        ind1 :   A starting index in the list of lines
-
-        comment_flag:   An optional string variable that marks comment lines
+    lines :  A list of input lines (assumed to be from the readlines()
+             function)
+    ind1 :   A starting index in the list of lines
+    comment_flag:   An optional string variable that marks comment lines
 
     Returns
     -------
-        n1 : an integer value for the next comment line (assumed to
-             start with '#') in the list of input lines, or the index
-             for the length of the line list if no other comment line is
-             found
+    n1 : an integer value for the next comment line (assumed to
+         start with '#') in the list of input lines, or the index
+         for the length of the line list if no other comment line is
+         found
     """
     ncomment = len(comment_flag)
-    for n1 in range(ind1+1, len(lines)):
+    for n1 in range(ind1 + 1, len(lines)):
         if comment_flag in lines[n1][0:ncomment]:
             return n1
     return len(lines)
@@ -550,20 +489,18 @@ def round_float(value, minimum_flag):
 
     Parmeters
     ---------
-
-        value :         A floating point number to be rounded off
-
-        minimum_flag :  A boolean value value to determine whether the
-                        value should be rounded down.  If True values
-                        are rounded down as one wishes for the minimum
-                        value in a plot, and if False values are rounded
-                        up as one wishes for the maximum value in a plot.
+    value :         A floating point number to be rounded off
+    minimum_flag :  A boolean value value to determine whether the
+                    value should be rounded down.  If True values
+                    are rounded down as one wishes for the minimum
+                    value in a plot, and if False values are rounded
+                    up as one wishes for the maximum value in a plot.
 
     Returns
     -------
-       rounded_value :    The rounded off floating point number calculated
-                          from `value', or the input value in the case
-                          where the self.matplotlib_routine flag is True.
+   rounded_value :    The rounded off floating point number calculated
+                      from `value', or the input value in the case
+                      where the self.matplotlib_routine flag is True.
 
     The code differs from use of the floor and ceil functions in that
     it tries to round to the nearest significant figure for a given
@@ -584,18 +521,18 @@ def round_float(value, minimum_flag):
         value1 = value
     power = math.log10(value1)
     if power < 0.:
-        exp = int(power-1.)
+        exp = int(power - 1.)
     else:
         exp = int(power)
     shift = 10.**exp
-    x = value1/shift
+    x = value1 / shift
     delx = 1.0
     if x < 1.7:
-        x = x*10.
-        shift = shift/10.
+        x = x * 10.
+        shift = shift / 10.
     elif x < 2.5:
-        x = x*5.
-        shift = shift/5.
+        x = x * 5.
+        shift = shift / 5.
     if (minimum_flag) and sign > 0.:
         x = math.floor(x)
     elif (minimum_flag) and sign < 0.:
@@ -604,21 +541,21 @@ def round_float(value, minimum_flag):
         x = math.ceil(x)
     elif (not minimum_flag) and sign < 0.:
         x = math.floor(x)
-    rounded_value = x*shift*sign
+    rounded_value = x * shift * sign
     # If the rounded value is very close to the input value, offset
     # by one unit in x...not normally part of the routine, but needed
     # for matplotlib plots because of symbols close to the edges of
     # the plot.
-    ratio = abs(value/rounded_value)
-    if abs(ratio-1.) < 0.03:
+    ratio = abs(value / rounded_value)
+    if abs(ratio - 1.) < 0.03:
         if (minimum_flag) and sign > 0.:
-            rounded_value = (x-delx)*shift*sign
+            rounded_value = (x - delx) * shift * sign
         elif (minimum_flag) and sign < 0.:
-            rounded_value = (x+delx)*shift*sign
+            rounded_value = (x + delx) * shift * sign
         elif (not minimum_flag) and sign > 0.:
-            rounded_value = (x+delx)*shift*sign
+            rounded_value = (x + delx) * shift * sign
         elif (not minimum_flag) and sign < 0.:
-            rounded_value = (x-delx)*shift*sign
+            rounded_value = (x - delx) * shift * sign
     return rounded_value
 
 
@@ -630,17 +567,9 @@ def put_value(value, field):
 
     Parameters
     ----------
-
-        value :  the string value to be placed in the text field
-
-        field :  the tkinter text field variable where the string is to
-                 be put
-
-    Returns
-    -------
-
-        None
-
+    value :  the string value to be placed in the text field
+    field :  the tkinter text field variable where the string is to
+             be put
     """
     try:
         s1 = field.get()
@@ -649,8 +578,8 @@ def put_value(value, field):
     except Exception:
         pass
 
-def separator_line(parent, w1, h1, pad, flag, packvalue=Tk.TOP,
-                   gridvalues=None):
+
+def separator_line(parent, w1, h1, pad, flag, packvalue=Tk.TOP, gridvalues=None):
     """
     Create the Tkinter canvas object making a separator line.
 
@@ -659,33 +588,25 @@ def separator_line(parent, w1, h1, pad, flag, packvalue=Tk.TOP,
 
     Parameters
     ----------
-
-        parent :  A Tkinter Frame variable, that will contain the line
-
-        w1 :      An integer value for the line canvas width (pixels)
-
-        h1 :      An integer value for the line canvas height (pixels)
-
-        pad :     An integer value for the line padding (pixels)
-
-        flag :    A Boolean value, the line is horizontal if the
-                  value is True, vertical otherwise
-
-        packvalue :  An optional Tkinter pack direction (one of Tk.LEFT,
-                     Tk.RIGHT, Tk.TOP, or Tk.BOTTOM) with default value
-                     of Tk.TOP; if None use the gridvalues
-
-        gridvalues : An optional list of seven grid parameters (row, column,
-                     rowspan, columnspan, sticky_string, padx, pady) to
-                     use if the packvalue is None; the first 4 values are
-                     integers, the next is a string using Tk for tkinter as in
-                     'Tk.E+Tk.W' for example, and the last 2 are integers
+    parent :  A Tkinter Frame variable, that will contain the line
+    w1 :      An integer value for the line canvas width (pixels)
+    h1 :      An integer value for the line canvas height (pixels)
+    pad :     An integer value for the line padding (pixels)
+    flag :    A Boolean value, the line is horizontal if the
+              value is True, vertical otherwise
+    packvalue :  An optional Tkinter pack direction (one of Tk.LEFT,
+                 Tk.RIGHT, Tk.TOP, or Tk.BOTTOM) with default value
+                 of Tk.TOP; if None use the gridvalues
+    gridvalues : An optional list of seven grid parameters (row, column,
+                 rowspan, columnspan, sticky_string, padx, pady) to
+                 use if the packvalue is None; the first 4 values are
+                 integers, the next is a string using Tk for tkinter as in
+                 'Tk.E+Tk.W' for example, and the last 2 are integers
 
     Returns
     -------
-
-        linecanvas:  the Tkinter Canvas variable for the line, in case
-                     the user wishes to modify it later
+    linecanvas:  the Tkinter Canvas variable for the line, in case
+                 the user wishes to modify it later
 
     For a vertical line normally the height will be much larger than the
     width, as in
@@ -707,10 +628,11 @@ def separator_line(parent, w1, h1, pad, flag, packvalue=Tk.TOP,
     else:
         lincanvas.pack(side=packvalue, fill=Tk.BOTH, expand=Tk.YES)
     if flag:
-        lincanvas.create_line(pad, h1/2, w1-pad, h1/2)
+        lincanvas.create_line(pad, h1 / 2, w1 - pad, h1 / 2)
     else:
-        lincanvas.create_line(w1/2, pad, w1/2, h1-pad)
+        lincanvas.create_line(w1 / 2, pad, w1 / 2, h1 - pad)
     return lincanvas
+
 
 def put_yes_no(root, var, labels, flag):
     """
@@ -722,24 +644,14 @@ def put_yes_no(root, var, labels, flag):
 
     Parameters
     ----------
-
-        root :  The tkinter frame variable to hold the buttons
-
-        var :   The tkinter IntVar that is used to communicate with the
-                buttons
-
-        labels : A two element list with strings for the two states of
-                 the buttons, first "yes" then "no".
-
-        flag :  A boolean value that causes the code to set the yes field
-                (the first of the two) if it is True.  If the value is
-                False the no field (the second of the two) is set instead.
-
-    Returns
-    -------
-
-        None
-
+    root :  The tkinter frame variable to hold the buttons
+    var :   The tkinter IntVar that is used to communicate with the
+            buttons
+    labels : A two element list with strings for the two states of
+             the buttons, first "yes" then "no".
+    flag :  A boolean value that causes the code to set the yes field
+            (the first of the two) if it is True.  If the value is
+            False the no field (the second of the two) is set instead.
     """
     yesfield = Tk.Radiobutton(root, text=labels[0], variable=var, value=1)
     yesfield.grid(row=0, column=0, sticky=Tk.W)
@@ -750,17 +662,15 @@ def put_yes_no(root, var, labels, flag):
     else:
         nofield.select()
 
+
 def add_yes_no_field(frame, text, flag):
     """
     Add a yes/no radio button pair to a frame
 
     Parmeters
-    ---------
-
+    --------
     frame:   a tkinter Frame variable that will hold the radio buttons
-
     text:    a tuple with text strings for the two buttons
-
     """
     field1 = Tk.Frame(frame)
     field1.pack(side=Tk.TOP)
@@ -772,16 +682,15 @@ def add_yes_no_field(frame, text, flag):
     b1.pack()
     return newvar
 
+
 def put_message(textbox, outstr):
     """
     Append a string to a message box.
 
     Parameters
     ----------
-
     textbox:   a Tkinter textbox or scrolledtext variable wherein to put the
                message string
-
     outstr:    a string variable, that is appended to the text of textbox
     """
     textbox.insert(Tk.END, outstr)
@@ -794,12 +703,10 @@ def range_check(angle):
 
     Parameters
     ----------
-
     angle:    a float value, an angle in degrees
 
     Returns
     -------
-
     newangle:   a float value, the angle in the range 0 to 360 degrees
 
     If the angle value passed is inf, -inf, of NaN a value of zero is returned.
@@ -808,10 +715,11 @@ def range_check(angle):
         return 0.
     if (angle >= 0.) and (angle <= 360.):
         return angle
-    term = angle/360.
+    term = angle / 360.
     offset = math.floor(term)
-    newangle = angle - offset*360.
+    newangle = angle - offset * 360.
     return newangle
+
 
 def save_fits(image):
     """
@@ -819,14 +727,7 @@ def save_fits(image):
 
     Parameters
     ----------
-    image : numpy array
-        A numpy float or integer array, here generally two-dimensional, to 
-        be saved to a FITS file
-
-    Returns
-    -------
-    None.
-
+    image : A numpy float or integer array, here generally two-dimensional, to be saved to a FITS file
     """
     try:
         outfile = tkinter.filedialog.asksaveasfilename(
@@ -838,5 +739,5 @@ def save_fits(image):
             values = outfile.split('/')
             filename = values[-1]
             print('Have saved the current image to: %s.\n' % (filename))
-    except:
+    except Exception:
         pass
