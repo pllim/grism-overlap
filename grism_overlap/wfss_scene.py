@@ -2,6 +2,8 @@
 The code here takes a scene image and convolves with the NIRISS WFSS "PSF"
 image to produce a simulated dispersed scene.
 """
+from pkg_resources import resource_filename
+
 import numpy
 from astropy.io import fits
 from scipy import signal
@@ -39,17 +41,16 @@ def wfss_scene(scene_image, filtername, grismname, x0, y0, psffile=None, through
     grisms = ['GR150R', 'GR150C']
     filters = ['F090W', 'F115W', 'F140M', 'F150W', 'F158M', 'F200W']
     if not grismname.upper() in grisms:
-        print('Error: bad grism name %s passed to wfss_scene'.format(grismname))
+        print('Error: bad grism name {} passed to wfss_scene'.format(grismname))
         return None
     if not filtername.upper() in filters:
-        print('Error: bad grism name %s passed to wfss_scene'.format(filtername))
+        print('Error: bad grism name {} passed to wfss_scene'.format(filtername))
         return None
 
     # Check data shape
     imshape = scene_image.shape
     if (x0 < 0) or (y0 < 0) or (x0 + 2322 > imshape[1]) or (y0 + 2322 > imshape[0]):
-        print('Error in wfss_scene: bad image offset values' + \
-              '(%d, %d) passed to the routine.'.format(x0, y0))
+        print('Error in wfss_scene: bad image offset values ({}, {}) passed to the routine.'.format(x0, y0))
         return None
 
     # Get the spot mask data
