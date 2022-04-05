@@ -33,14 +33,16 @@ rel_pos:   Calculate the pixel position of a given (RA, Dec) sky position
            using direct geometry.
 
 """
-# import sys
+
 import math
+
+import astropy.io.fits as fits
+from astropy.modeling.models import Sersic2D
 import numpy
 import pysiaf
-import astropy.io.fits as fits
 import scipy.signal as signal
 import scipy.ndimage as ndimage
-from astropy.modeling.models import Sersic2D
+
 
 def make_star_image(star_file_name, position, filter1, path='./',
                     simple=False):
@@ -97,8 +99,8 @@ def make_star_image(star_file_name, position, filter1, path='./',
               'F277W', 'F356W', 'F380M', 'F430M', 'F444W', 'F480M']
     mag0 = numpy.asarray(mag0)
     aboff = numpy.asarray(aboff)
-    aboff = numpy.power(10., aboff*0.4)
-    mag0 = mag0/1.612
+    aboff = numpy.power(10., aboff * 0.4)
+    mag0 = mag0 / 1.612
     if not filter1.upper() in fnames:
         print('Filter name not recognized.')
         return None, blank
@@ -120,7 +122,7 @@ def make_star_image(star_file_name, position, filter1, path='./',
             if ('abmag' in line) and ('#' in line):
                 abmag_flag = True
             if 'x_or_RA' in line:
-                racol =-1
+                racol = -1
                 deccol = -1
                 magcol = -1
                 target = 'niriss_' + filter1.lower() + '_magnitude'
@@ -137,29 +139,27 @@ def make_star_image(star_file_name, position, filter1, path='./',
                     print('Unable to parse columns in star file.')
                     return None, blank
                 try:
-                    ravalues = numpy.loadtxt(star_file_name, usecols=[racol,],
-                                             comments=['#', 'index'])
-                    decvalues = numpy.loadtxt(star_file_name, usecols=[deccol,],
-                                              comments=['#', 'index'])
-                    magvalues = numpy.loadtxt(star_file_name, usecols=[magcol,],
-                                              comments=['#', 'index'])
+                    ravalues = numpy.loadtxt(star_file_name, usecols=[racol, ], comments=['#', 'index'])
+                    decvalues = numpy.loadtxt(star_file_name, usecols=[deccol, ], comments=['#', 'index'])
+                    magvalues = numpy.loadtxt(star_file_name, usecols=[magcol, ], comments=['#', 'index'])
                     break
-                except:
+                except Exception:
                     print('Unable to read the position/magnitude values.')
                     return None, blank
         lines = 0
-        signal1 = magvalues*0.
+        signal1 = magvalues * 0.
         for loop in range(len(magvalues)):
-            signal1[loop] = mag0[findex]/(10.**(magvalues[loop]*0.4))
+            signal1[loop] = mag0[findex] / (10.**(magvalues[loop] * 0.4))
             if abmag_flag:
-                signal1[loop] = signal1[loop]*aboff[findex]
+                signal1[loop] = signal1[loop] * aboff[findex]
         star_list = [ravalues, decvalues, signal1]
         scene_image, new_star_list = generate_image(star_list, position,
                                                     simple=simple)
         return scene_image, new_star_list
-    except:
+    except Exception:
         print('An error occurred generating the scene image.')
         return None, blank
+
 
 def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
                       simple=False):
@@ -201,8 +201,8 @@ def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
                     None is returned if there is an issue.
 
     """
-    instrument = 'NIRISS'
-    aperture = 'NIS_CEN'
+    # instrument = 'NIRISS'
+    # aperture = 'NIS_CEN'
     mag0 = [1.243877e+11, 1.041117e+11, 3.256208e+10, 6.172448e+10,
             2.877868e+10, 4.245261e+10, 2.472333e+10, 1.626810e+10,
             2.930977e+09, 1.902929e+09, 9.948760e+09, 1.703311e+09]
@@ -212,8 +212,8 @@ def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
               'F277W', 'F356W', 'F380M', 'F430M', 'F444W', 'F480M']
     mag0 = numpy.asarray(mag0)
     aboff = numpy.asarray(aboff)
-    aboff = numpy.power(10., aboff*0.4)
-    mag0 = mag0/1.612
+    aboff = numpy.power(10., aboff * 0.4)
+    mag0 = mag0 / 1.612
     if not filter1.upper() in fnames:
         print('Filter name (%s) not recognized.' % (filter1))
         return None
@@ -236,7 +236,7 @@ def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
             if ('abmag' in line) and ('#' in line):
                 abmag_flag = True
             if 'x_or_RA' in line:
-                racol =-1
+                racol = -1
                 deccol = -1
                 pacol = -1
                 radcol = -1
@@ -267,34 +267,33 @@ def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
                     print('Unable to parse columns in galaxies file.')
                     return None
         try:
-            ravalues = numpy.loadtxt(galaxy_file_name, usecols=[racol,],
-                                     comments=['#', 'index'])
-            decvalues = numpy.loadtxt(galaxy_file_name, usecols=[deccol,],
+            ravalues = numpy.loadtxt(galaxy_file_name, usecols=[racol, ], comments=['#', 'index'])
+            decvalues = numpy.loadtxt(galaxy_file_name, usecols=[deccol, ], comments=['#', 'index'])
+            magvalues = numpy.loadtxt(galaxy_file_name, usecols=[magcol, ],
                                       comments=['#', 'index'])
-            magvalues = numpy.loadtxt(galaxy_file_name, usecols=[magcol,],
+            radvalues = numpy.loadtxt(galaxy_file_name, usecols=[radcol, ],
                                       comments=['#', 'index'])
-            radvalues = numpy.loadtxt(galaxy_file_name, usecols=[radcol,],
-                                      comments=['#', 'index'])
-            ellipvalues = numpy.loadtxt(galaxy_file_name, usecols=[ellipcol,],
+            ellipvalues = numpy.loadtxt(galaxy_file_name, usecols=[ellipcol, ],
                                         comments=['#', 'index'])
-            pavalues = numpy.loadtxt(galaxy_file_name, usecols=[pacol,],
+            pavalues = numpy.loadtxt(galaxy_file_name, usecols=[pacol, ],
                                      comments=['#', 'index'])
-            indexvalues = numpy.loadtxt(galaxy_file_name, usecols=[indexcol,],
+            indexvalues = numpy.loadtxt(galaxy_file_name, usecols=[indexcol, ],
                                         comments=['#', 'index'])
-            signal1 = mag0[findex]/numpy.power(10., magvalues*0.4)
-            signal1 = signal1/1.612
+            signal1 = mag0[findex] / numpy.power(10., magvalues * 0.4)
+            signal1 = signal1 / 1.612
             if abmag_flag:
-                signal1 = signal1*aboff[findex]
-        except:
+                signal1 = signal1 * aboff[findex]
+        except Exception:
             print('Unable to read the position/magnitude/shape values.')
             return None
         galaxy_list = [ravalues, decvalues, magvalues, signal1,
                        radvalues, ellipvalues, pavalues, indexvalues]
         gimage = generate_galaxy_image(galaxy_list, position, simple=simple)
         return gimage
-    except:
-#        print('Some error occured trying to read the galaxies parameter file.')
+    except Exception:
+        # print('Some error occured trying to read the galaxies parameter file.')
         return None
+
 
 def generate_galaxy_image(galaxy_list, position, rotation=0., simple=False):
     """
@@ -327,25 +326,25 @@ def generate_galaxy_image(galaxy_list, position, rotation=0., simple=False):
     x, y = numpy.meshgrid(numpy.arange(301), numpy.arange(301))
     xcen = 150
     ycen = 150
-    amplitude = 1.
-    twopi = 2.*3.14159265358979
+    # amplitude = 1.
+    twopi = 2. * 3.14159265358979
     ravalues = galaxy_list[0]
     decvalues = galaxy_list[1]
     signals = galaxy_list[3]
-    radvalues = galaxy_list[4]/0.0656
+    radvalues = galaxy_list[4] / 0.0656
     ellipvalues = galaxy_list[5]
-    pavalues = galaxy_list[6]*twopi/360.0
+    pavalues = galaxy_list[6] * twopi / 360.0
     indvalues = galaxy_list[7]
     galaxy_image = numpy.zeros((4231, 4231), dtype=numpy.float32)
     for loop in range(len(indvalues)):
         mod = Sersic2D(amplitude=1., r_eff=radvalues[loop],
                        n=indvalues[loop], x_0=xcen, y_0=ycen,
                        ellip=ellipvalues[loop],
-                       theta=pavalues[loop]-rotation)
-        image = mod(x,y)
+                       theta=pavalues[loop] - rotation)
+        image = mod(x, y)
         tsig = numpy.sum(image)
         if tsig > 0.:
-            image = image/numpy.sum(image)
+            image = image / numpy.sum(image)
         if simple:
             xpix, ypix = relpos(ravalues[loop], decvalues[loop],
                                 position[0], position[1], rotation,
@@ -356,8 +355,8 @@ def generate_galaxy_image(galaxy_list, position, rotation=0., simple=False):
             xpix, ypix = get_pixel(ravalues[loop], decvalues[loop],
                                    position[0], position[1], rotation,
                                    instrument, aperture)
-        nxpix = int(xpix)+1092
-        nypix = int(ypix)+1092
+        nxpix = int(xpix) + 1092
+        nypix = int(ypix) + 1092
         if (nxpix >= 0) and (nxpix < 4231) and (nypix >= 0) and (nypix < 4231):
             x0 = nxpix - 150
             y0 = nypix - 150
@@ -374,15 +373,15 @@ def generate_galaxy_image(galaxy_list, position, rotation=0., simple=False):
                 ymin = -y0
                 y0 = 0
             if y1 > 4231:
-                ymax = 301 - (y1-4231)
+                ymax = 301 - (y1 - 4231)
                 y1 = 4231
             if x1 > 4231:
-                xmax = 301 - (x1-4231)
+                xmax = 301 - (x1 - 4231)
                 x1 = 4231
             try:
                 galaxy_image[y0:y1, x0:x1] = galaxy_image[y0:y1, x0:x1] + \
-                    image[ymin:ymax, xmin:xmax]*signals[loop]
-            except:
+                    image[ymin:ymax, xmin:xmax] * signals[loop]
+            except Exception:
                 pass
     return galaxy_image
 
@@ -410,14 +409,15 @@ def do_convolve(scene_image, filter1, path):
     """
     psfname = 'niriss_NIS_x1024_y1024_' + filter1.lower() + '_predicted_0_0p00_0p00.fits'
     if path[-1] != '/':
-        path = path+'/'
+        path = path + '/'
     try:
-        psf_image = fits.getdata(path+psfname)
-    except:
-        print('Failed to read PSF image %d.' % (path+psfname))
+        psf_image = fits.getdata(path + psfname)
+    except Exception:
+        print('Failed to read PSF image %d.' % (path + psfname))
         return None
     convolved_image = signal.fftconvolve(scene_image, psf_image, mode='same')
     return convolved_image
+
 
 def rotate_image(scene_image, angle):
     """
@@ -440,9 +440,9 @@ def rotate_image(scene_image, angle):
 
     The rotation is done using the scipy ndimage package.
     """
-    term = angle/360.
+    term = angle / 360.
     offset = math.floor(term)
-    rotangle = angle - offset*360.
+    rotangle = angle - offset * 360.
     if rotangle == 0.:
         return scene_image
     zmin = numpy.min(scene_image)
@@ -450,18 +450,19 @@ def rotate_image(scene_image, angle):
     rotated_image = ndimage.rotate(scene_image, -rotangle, cval=zmin, order=5)
     sh2 = rotated_image.shape
     if sh2 != sh1:
-        xmin = (sh2[1]-sh1[1]) // 2
-        xmax = xmin+sh1[1]
-        ymin = (sh2[0]-sh1[0]) // 2
-        ymax = ymin+sh1[0]
+        xmin = (sh2[1] - sh1[1]) // 2
+        xmax = xmin + sh1[1]
+        ymin = (sh2[0] - sh1[0]) // 2
+        ymax = ymin + sh1[0]
         rotated_image = numpy.copy(rotated_image[ymin:ymax, xmin:xmax])
-# ndimage.rotate tends to produce negative artifacts in the image, screen
-# these out to the minimum in the original image
+    # ndimage.rotate tends to produce negative artifacts in the image, screen
+    # these out to the minimum in the original image
     inds = numpy.where(rotated_image < zmin)
     rotated_image[inds] = zmin
+    # note this needs to be tested for accuracy.  Sharp PSFs may cause issues in
+    # this code....
     return rotated_image
-# note this needs to be tested for accuracy.  Sharp PSFs may cause issues in
-# this code....
+
 
 def generate_image(star_list, position, rotation=0., simple=False):
     """
@@ -513,10 +514,10 @@ def generate_image(star_list, position, rotation=0., simple=False):
             xpix, ypix = get_pixel(ravalues[loop], decvalues[loop],
                                    position[0], position[1], rotation,
                                    instrument, aperture)
-        nxpix = int(xpix)+1092
-        nypix = int(ypix)+1092
+        nxpix = int(xpix) + 1092
+        nypix = int(ypix) + 1092
         if (nxpix >= 0) and (nxpix < 4231) and (nypix >= 0) and (nypix < 4231):
-            scene_image[nypix, nxpix] = scene_image[nypix, nxpix]+signals[loop]
+            scene_image[nypix, nxpix] = scene_image[nypix, nxpix] + signals[loop]
             nout = nout + 1
             newravalues.append(ravalues[loop])
             newdecvalues.append(decvalues[loop])
@@ -525,6 +526,7 @@ def generate_image(star_list, position, rotation=0., simple=False):
                      numpy.asarray(newdecvalues, dtype=numpy.float32),
                      numpy.asarray(newsignal, dtype=numpy.float32)]
     return scene_image, new_star_list
+
 
 def get_pixel(ratarget, dectarget, ra0, dec0, rotation, instrument, aperture):
     """
@@ -557,43 +559,28 @@ def get_pixel(ratarget, dectarget, ra0, dec0, rotation, instrument, aperture):
     ypixel:    the object y pixel position, a float value
 
     """
-    dtor = 3.14159265358979/180.
+    dtor = 3.14159265358979 / 180.
     siaf_instance = pysiaf.Siaf(instrument)
     siaf = siaf_instance[aperture]
     v2_arcsec = siaf.V2Ref
     v3_arcsec = siaf.V3Ref
-    v2 = v2_arcsec*dtor/3600.
-    v3 = v3_arcsec*dtor/3600.
-    ra_ref = ra0*dtor
-    dec_ref = dec0*dtor
-    pa_v3 = rotation*dtor
-    mat1 = numpy.array([[numpy.cos(ra_ref) * numpy.cos(dec_ref),
-        -numpy.sin(ra_ref) * numpy.cos(pa_v3) + numpy.cos(ra_ref) * \
-            numpy.sin(dec_ref) * numpy.sin(pa_v3),
-        -numpy.sin(ra_ref) * numpy.sin(pa_v3) - numpy.cos(ra_ref) * \
-            numpy.sin(dec_ref) * numpy.cos(pa_v3)],
-        [numpy.sin(ra_ref) * numpy.cos(dec_ref),
-         numpy.cos(ra_ref) * numpy.cos(pa_v3) + numpy.sin(ra_ref) * \
-             numpy.sin(dec_ref) * numpy.sin(pa_v3),
-         numpy.cos(ra_ref) * numpy.sin(pa_v3) - numpy.sin(ra_ref) * \
-             numpy.sin(dec_ref) * numpy.cos(pa_v3)],
-        [numpy.sin(dec_ref), -numpy.cos(dec_ref) * numpy.sin(pa_v3),
-         numpy.cos(dec_ref) * numpy.cos(pa_v3)]])
+    v2 = v2_arcsec * dtor / 3600.
+    v3 = v3_arcsec * dtor / 3600.
+    ra_ref = ra0 * dtor
+    dec_ref = dec0 * dtor
+    pa_v3 = rotation * dtor
+    mat1 = numpy.array([[numpy.cos(ra_ref) * numpy.cos(dec_ref), -numpy.sin(ra_ref) * numpy.cos(pa_v3) + numpy.cos(ra_ref) * numpy.sin(dec_ref) * numpy.sin(pa_v3), -numpy.sin(ra_ref) * numpy.sin(pa_v3) - numpy.cos(ra_ref) * numpy.sin(dec_ref) * numpy.cos(pa_v3)], [numpy.sin(ra_ref) * numpy.cos(dec_ref), numpy.cos(ra_ref) * numpy.cos(pa_v3) + numpy.sin(ra_ref) * numpy.sin(dec_ref) * numpy.sin(pa_v3), numpy.cos(ra_ref) * numpy.sin(pa_v3) - numpy.sin(ra_ref) * numpy.sin(dec_ref) * numpy.cos(pa_v3)], [numpy.sin(dec_ref), -numpy.cos(dec_ref) * numpy.sin(pa_v3), numpy.cos(dec_ref) * numpy.cos(pa_v3)]])
 
-    X = -(mat1[2, 0] * numpy.cos(v2) + mat1[2, 1] * numpy.sin(v2)) * \
-        numpy.sin(v3) + mat1[2, 2] * numpy.cos(v3)
-    Y = (mat1[0, 0] *  mat1[1, 2] - mat1[1, 0] * mat1[0, 2]) * \
-        numpy.cos(v2) + (mat1[0, 1] * mat1[1, 2] - mat1[1, 1] * mat1[0, 2]
-                         ) * numpy.sin(v2)
+    X = -(mat1[2, 0] * numpy.cos(v2) + mat1[2, 1] * numpy.sin(v2)) * numpy.sin(v3) + mat1[2, 2] * numpy.cos(v3)
+    Y = (mat1[0, 0] * mat1[1, 2] - mat1[1, 0] * mat1[0, 2]) * numpy.cos(v2) + (mat1[0, 1] * mat1[1, 2] - mat1[1, 1] * mat1[0, 2]) * numpy.sin(v2)
     local_roll = numpy.rad2deg(numpy.arctan2(Y, X))
     if local_roll < 0:
-        local_roll = local_roll+360.
-    attitude_matrix = pysiaf.utils.rotations.attitude(
-        v2_arcsec, v3_arcsec, ra0, dec0, local_roll)
-    loc_v2, loc_v3 = pysiaf.utils.rotations.getv2v3(
-        attitude_matrix, ratarget, dectarget)
+        local_roll = local_roll + 360.
+    attitude_matrix = pysiaf.utils.rotations.attitude(v2_arcsec, v3_arcsec, ra0, dec0, local_roll)
+    loc_v2, loc_v3 = pysiaf.utils.rotations.getv2v3(attitude_matrix, ratarget, dectarget)
     xpixel, ypixel = siaf.tel_to_sci(loc_v2, loc_v3)
     return xpixel, ypixel
+
 
 def relpos(ra1, dec1, ra0, dec0, rotation, pixelsize):
     """
@@ -624,23 +611,21 @@ def relpos(ra1, dec1, ra0, dec0, rotation, pixelsize):
     dtor = math.radians(1.)
     if (ra1 == ra0) and (dec1 == dec0):
         return 0., 0.
-    angle=math.atan2(math.sin((ra1-ra0)*dtor),
-                     math.cos(dec0*dtor)* \
-                     math.tan(dec1*dtor)- \
-                     math.sin(dec0*dtor)*math.cos((ra1-ra0)*dtor))/dtor
+    angle = math.atan2(math.sin((ra1 - ra0) * dtor), math.cos(dec0 * dtor) * math.tan(dec1 * dtor) - math.sin(dec0 * dtor) * math.cos((ra1 - ra0) * dtor)) / dtor
     if angle > 360.:
-        angle=angle-360.
+        angle = angle - 360.
     if angle < 0.:
-        angle=angle+360.
+        angle = angle + 360.
     angle = angle - rotation
-    arcdist=math.sin(dec0*dtor)*math.sin(dec1*dtor)+math.cos(dec0*dtor)*math.cos(dec1*dtor)*math.cos(dtor*(ra1-ra0))
+    arcdist = math.sin(dec0 * dtor) * math.sin(dec1 * dtor) + math.cos(dec0 * dtor) * math.cos(dec1 * dtor) * math.cos(dtor * (ra1 - ra0))
     if abs(arcdist) > 1.:
         arcdist = 1.
-    arcdist=math.acos(arcdist)
-    arcdist=arcdist/dtor
+    arcdist = math.acos(arcdist)
+    arcdist = arcdist / dtor
     if arcdist < 0.:
-        arcdist=arcdist+180.
-    arcdist = arcdist*(3600./pixelsize)
-    delxpix = -arcdist*math.sin(angle*dtor)
-    delypix = arcdist*math.cos(angle*dtor)
+        arcdist = arcdist + 180.
+    arcdist = arcdist * (3600. / pixelsize)
+    delxpix = -arcdist * math.sin(angle * dtor)
+    delypix = arcdist * math.cos(angle * dtor)
+
     return delxpix, delypix
