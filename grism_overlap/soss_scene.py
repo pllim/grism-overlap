@@ -5,8 +5,8 @@ image to produce a simulated dispersed scene.
 from glob import glob
 from pkg_resources import resource_filename
 
-import numpy as np
 from astropy.io import fits
+import numpy as np
 from scipy import signal
 
 
@@ -35,8 +35,7 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
     """
     imshape = scene_image.shape
     if (imshape[0] != 4231) or (imshape[1] != 4231):
-        print('Error in soss_scene: wrong size image' + \
-              '(%d, %d) passed to the routine.' % (imshape[1], imshape[0]))
+        print('Error in soss_scene: wrong size image (%d, %d) passed to the routine.' % (imshape[1], imshape[0]))
         return None
 
     # Get the spot mask data
