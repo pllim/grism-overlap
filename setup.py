@@ -2,11 +2,11 @@
 import os
 from setuptools import setup, find_packages
 
-REQUIRES = ['numpy', 'scipy', 'matplotlib', 'pysiaf', 'astropy']
+REQUIRES = ['tk', 'extension-helpers', 'numpy', 'scipy', 'matplotlib', 'pysiaf', 'astropy']
 
 FILES = []
 for root, _, files in os.walk("grism_overlap"):
-    FILES += [os.path.join(root, fname)
+    FILES += [os.path.join(root, fname).replace('grism_overlap/grism_overlap', 'grism_overlap')
               for fname in files if not fname.endswith(".py") and not fname.endswith(".pyc")]
 
 setup(

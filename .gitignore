@@ -64,3 +64,4 @@ distribute-*.tar.gz
 *checkpoint.ipynb
 *brkn*
 saveDataFiles
+__pycache__/
