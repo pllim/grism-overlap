@@ -24,21 +24,24 @@ is used.  There is no mechanism here for using other planes.
 """
 import math
 import sys
-import tkinter as Tk
-import tkinter.ttk
-import tkinter.filedialog
-import tkinter.simpledialog
-import tkinter.messagebox
-import numpy
+
 from astropy.io import fits
+import numpy
 # import matplotlib
 # import matplotlib.lines as mlines
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 # from matplotlib.colors import LogNorm
 import matplotlib.pyplot as pyplot
+import tkinter as Tk
+import tkinter.ttk
+import tkinter.filedialog
+import tkinter.simpledialog
+import tkinter.messagebox
+
 import general_utilities
 import mpfitexpr
+
 
 class ImageGUI(Tk.Frame):
     """
@@ -56,8 +59,6 @@ class ImageGUI(Tk.Frame):
     The class variable is returned, effectively.
     """
     # The following section of code concerns the image display functionality.
-    #
-
     def __init__(self, parent=None, **args):
         self.image = None
         self.imagefilename = None
@@ -105,15 +106,9 @@ class ImageGUI(Tk.Frame):
             Tk.Frame.__init__(self, parent, args)
             self.root = parent
 
-
     def make_image_window(self):
         """
         Make the main image display window.
-
-        Returns
-        -------
-        None.
-
         """
         # make the window
         BGCOL = '#F8F8FF'
@@ -126,9 +121,7 @@ class ImageGUI(Tk.Frame):
         imageLabelFrame = Tk.Frame(imagewindow)
         imageLabelFrame.pack(side=Tk.TOP)
         self.imagePosLabelText = Tk.StringVar()
-        self.imagePosLabel = Tk.Label(imageLabelFrame,
-                                      textvariable=self.imagePosLabelText,
-                                      anchor=Tk.N, width=70)
+        self.imagePosLabel = Tk.Label(imageLabelFrame, textvariable=self.imagePosLabelText, anchor=Tk.N, width=70)
         self.imagePosLabel.pack(side=Tk.LEFT)
         self.imagePosLabelText.set("Position:  Value:")
         controlFrame = Tk.Frame(imagewindow)
@@ -139,8 +132,7 @@ class ImageGUI(Tk.Frame):
         self.mplsubplot1 = self.mplfig1.add_subplot(1, 1, 1)
         self.canvas1 = FigureCanvasTkAgg(self.mplfig1, master=self.plotFrame)
         self.canvas1.draw()
-        self.canvas1.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH,
-                                          expand=Tk.YES)
+        self.canvas1.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=Tk.YES)
         self.canvas1.mpl_connect("motion_notify_event", self.setPlotPosition)
         self.canvas1.mpl_connect("button_press_event", self.buttonPress)
         self.canvas1.mpl_connect("button_release_event", self.buttonRelease)
@@ -150,27 +142,21 @@ class ImageGUI(Tk.Frame):
         lb = Tk.Label(newframe, text='Colour Scheme')
         lb.pack(side=Tk.TOP)
         self.colourScheme = tkinter.ttk.Combobox(newframe, width=15)
-        self.colourLabels = ['jet', 'rainbow', 'gist_ncar', 'viridis',
-                             'gnuplot', 'gist_gray', 'nipy_spectral']
+        self.colourLabels = ['jet', 'rainbow', 'gist_ncar', 'viridis', 'gnuplot', 'gist_gray', 'nipy_spectral']
         self.colourScheme['values'] = self.colourLabels
         self.colourScheme.pack()
         self.colourScheme.current(0)
-        #
+
         lb = Tk.Label(newframe, text='Show Colour Bar')
         lb.pack()
         selectFrame = Tk.Frame(newframe)
         selectFrame.pack()
         self.colourBar = Tk.IntVar()
-        t1 = Tk.Radiobutton(selectFrame, text='vertical',
-                            variable=self.colourBar, value=0,
-                            command=self.displayImage)
+        t1 = Tk.Radiobutton(selectFrame, text='vertical', variable=self.colourBar, value=0, command=self.displayImage)
         t1.pack(side=Tk.LEFT)
-        t2 = Tk.Radiobutton(selectFrame, text='horizontal',
-                            variable=self.colourBar, value=1,
-                            command=self.displayImage)
+        t2 = Tk.Radiobutton(selectFrame, text='horizontal', variable=self.colourBar, value=1, command=self.displayImage)
         t2.pack(side=Tk.LEFT)
-        t3 = Tk.Radiobutton(selectFrame, text='none', variable=self.colourBar,
-                            value=2, command=self.displayImage)
+        t3 = Tk.Radiobutton(selectFrame, text='none', variable=self.colourBar, value=2, command=self.displayImage)
         t3.pack(side=Tk.LEFT)
         self.colourBar.set(2)
         lb = Tk.Label(newframe, text='Colour Bar Label')
@@ -217,14 +203,14 @@ class ImageGUI(Tk.Frame):
         self.zsmaxField.pack()
         try:
             zmin1, zmax1 = self.get_limits(self.image)
-            ratio = abs(zmax1/zmin1)
+            ratio = abs(zmax1 / zmin1)
             if ratio < 1.2:
                 if zmin1 < 0.:
                     zmax1 = zmin1
-                    zmin1 = 3.*zmin1
+                    zmin1 = 3. * zmin1
                 else:
-                    zmax1 = 3.*zmin1
-        except:
+                    zmax1 = 3. * zmin1
+        except Exception:
             zmin1 = 0.
             zmax1 = 1.
         general_utilities.put_value(zmin1, self.zsminField)
@@ -234,16 +220,11 @@ class ImageGUI(Tk.Frame):
         selectFrame = Tk.Frame(newframe)
         selectFrame.pack()
         self.scaleType = Tk.IntVar()
-        t1 = Tk.Radiobutton(selectFrame, text='linear',
-                            variable=self.scaleType, value=0,
-                            command=self.displayImage)
+        t1 = Tk.Radiobutton(selectFrame, text='linear', variable=self.scaleType, value=0, command=self.displayImage)
         t1.pack(side=Tk.LEFT)
-        t2 = Tk.Radiobutton(selectFrame, text='log', variable=self.scaleType,
-                            value=1, command=self.displayImage)
+        t2 = Tk.Radiobutton(selectFrame, text='log', variable=self.scaleType, value=1, command=self.displayImage)
         t2.pack(side=Tk.LEFT)
-        t3 = Tk.Radiobutton(selectFrame, text='sqrt',
-                            variable=self.scaleType, value=2,
-                            command=self.displayImage)
+        t3 = Tk.Radiobutton(selectFrame, text='sqrt', variable=self.scaleType, value=2, command=self.displayImage)
         t3.pack(side=Tk.LEFT)
         self.scaleType.set(0)
         lb = Tk.Label(newframe, text='Image Range')
@@ -251,13 +232,9 @@ class ImageGUI(Tk.Frame):
         selectFrame = Tk.Frame(newframe)
         selectFrame.pack()
         self.rangeType = Tk.IntVar()
-        t1 = Tk.Radiobutton(
-            selectFrame, text='full', variable=self.rangeType,
-            value=0, command=self.toggle_zscale)
+        t1 = Tk.Radiobutton(selectFrame, text='full', variable=self.rangeType, value=0, command=self.toggle_zscale)
         t1.pack(side=Tk.LEFT)
-        t2 = Tk.Radiobutton(
-            selectFrame, text='zscale', variable=self.rangeType,
-            value=1, command=self.toggle_zscale)
+        t2 = Tk.Radiobutton(selectFrame, text='zscale', variable=self.rangeType, value=1, command=self.toggle_zscale)
         t2.pack(side=Tk.LEFT)
         self.rangeType.set(0)
         buttonFrame = Tk.Frame(controlFrame)
@@ -266,19 +243,15 @@ class ImageGUI(Tk.Frame):
         subFrame.pack(side=Tk.TOP)
         side1 = Tk.Frame(subFrame)
         side1.pack(side=Tk.LEFT)
-        b1 = Tk.Button(side1, text='Toggle Axes',
-                       command=self.toggleAxes)
+        b1 = Tk.Button(side1, text='Toggle Axes', command=self.toggleAxes)
         b1.pack(side=Tk.TOP)
-        b1 = Tk.Button(side1, text='Auto Scale',
-                       command=self.imageAutoscale)
+        b1 = Tk.Button(side1, text='Auto Scale', command=self.imageAutoscale)
         b1.pack(side=Tk.TOP)
         side2 = Tk.Frame(subFrame)
         side2.pack(side=Tk.LEFT)
-        b1 = Tk.Button(side2, text='Image Histogram',
-                       command=self.imageHistogram)
+        b1 = Tk.Button(side2, text='Image Histogram', command=self.imageHistogram)
         b1.pack(side=Tk.TOP)
-        b1 = Tk.Button(side2, text='Set Zoom',
-                       command=self.set_zoom)
+        b1 = Tk.Button(side2, text='Set Zoom', command=self.set_zoom)
         b1.pack(side=Tk.TOP)
         bin_frame = Tk.Frame(buttonFrame)
         bin_frame.pack(side=Tk.TOP)
@@ -287,40 +260,28 @@ class ImageGUI(Tk.Frame):
         self.bin_field = Tk.Entry(bin_frame, width=10)
         self.bin_field.grid(row=0, column=1)
         self.bin_field.insert(0, '100')
-        label = Tk.Label(
-            bin_frame, text='Positive for bin number, negative for \nbin size')
+        label = Tk.Label(bin_frame, text='Positive for bin number, negative for \nbin size')
         label.grid(row=1, column=0, columnspan=2)
         label = Tk.Label(buttonFrame, text='Histogram y scaling:')
         label.pack()
         yscaleFrame = Tk.Frame(buttonFrame)
         yscaleFrame.pack(side=Tk.TOP)
         self.yscaleType = Tk.IntVar()
-        t1 = Tk.Radiobutton(
-            yscaleFrame, text='linear', variable=self.yscaleType,
-            value=0)
+        t1 = Tk.Radiobutton(yscaleFrame, text='linear', variable=self.yscaleType, value=0)
         t1.pack(side=Tk.LEFT)
-        t2 = Tk.Radiobutton(
-            yscaleFrame, text='hybrid log', variable=self.yscaleType,
-            value=1)
+        t2 = Tk.Radiobutton(yscaleFrame, text='hybrid log', variable=self.yscaleType, value=1)
         t2.pack(side=Tk.LEFT)
         self.rangeType.set(0)
-        b1 = Tk.Button(buttonFrame, text='Save Image as FITS',
-                       command=lambda: general_utilities.save_fits(self.image))
+        b1 = Tk.Button(buttonFrame, text='Save Image as FITS', command=lambda: general_utilities.save_fits(self.image))
         b1.pack(side=Tk.TOP)
-        b1 = Tk.Button(buttonFrame, text='Save as PNG',
-                       command=lambda: general_utilities.save_png_figure(
-                           self.mplfig1))
+        b1 = Tk.Button(buttonFrame, text='Save as PNG', command=lambda: general_utilities.save_png_figure(self.mplfig1))
         b1.pack(side=Tk.TOP)
-        b1 = Tk.Button(buttonFrame, text='Save as PS',
-                       command=lambda: general_utilities.save_ps_figure(
-                           self.mplfig1))
+        b1 = Tk.Button(buttonFrame, text='Save as PS', command=lambda: general_utilities.save_ps_figure(self.mplfig1))
         b1.pack(side=Tk.TOP)
-        b1 = Tk.Button(buttonFrame, text='Redisplay',
-                       command=self.displayImage)
+        b1 = Tk.Button(buttonFrame, text='Redisplay', command=self.displayImage)
         b1.pack(side=Tk.TOP)
-#        b1 = Tk.Button(buttonFrame, text='Close',
-#                       command=lambda: self.imageExit(imagewindow))
-#        b1.pack(side=Tk.TOP)
+        # b1 = Tk.Button(buttonFrame, text='Close', command=lambda: self.imageExit(imagewindow))
+        # b1.pack(side=Tk.TOP)
         self.displayImage()
 
     def zoom_corner(self, sh1, zoom, x1, y1):
@@ -329,31 +290,23 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-
         sh1:  A two-element list of the shape of the input image, values being
               integers
-
         zoom:  A positive integer zoom function to be applied to the image
-
         x1:    The x pixel value for the centre of the field to display
                (float or integer)
-
         y1:    The y pixel value for the centre of the field to display
                (float or integer)
 
         Returns
         -------
-
         xmin:  An integer value for the lower left corner x pixel index
-
         ymin:  An integer value for the lower left corner y pixel index
-
-
         """
         nxpixel = sh1[1] // zoom
         nypixel = sh1[0] // zoom
-        xmin = x1 - nxpixel/2.
-        ymin = y1 - nypixel/2.
+        xmin = x1 - nxpixel / 2.
+        ymin = y1 - nypixel / 2.
         xmin = int(xmin)
         ymin = int(ymin)
         if xmin < 0:
@@ -379,21 +332,17 @@ class ImageGUI(Tk.Frame):
         """
         sh1 = self.image.shape
         npixel = min(sh1[0], sh1[1])
-        zoommax = int(npixel/64.)
+        zoommax = int(npixel / 64.)
         if zoommax <= 1:
-            tkinter.messagebox.showinfo(
-                "Error",
-                "Zoom is disabled for minimum image size < 128 pixels.")
+            tkinter.messagebox.showinfo("Error", "Zoom is disabled for minimum image size < 128 pixels.")
             return
         if self.xposition is None:
-            x1 = sh1[1]/2.
-            y1 = sh1[0]/2.
+            x1 = sh1[1] / 2.
+            y1 = sh1[0] / 2.
         else:
             x1 = self.xposition
             y1 = self.yposition
-        zoom = tkinter.simpledialog.askinteger(
-            'Input',
-            'Set the integer zoom value (1 to %d)' % (zoommax))
+        zoom = tkinter.simpledialog.askinteger('Input', 'Set the integer zoom value (1 to %d)' % (zoommax))
         if zoom is None:
             return
         else:
@@ -431,8 +380,7 @@ class ImageGUI(Tk.Frame):
         No parameters are passed to this routine or returned from this routine.
         """
         try:
-            filename = tkinter.filedialog.askopenfilename(
-                filetypes=[('FITS', '*.fits')])
+            filename = tkinter.filedialog.askopenfilename(filetypes=[('FITS', '*.fits')])
             if filename is not None:
                 self.imagefilename = filename
                 self.image = self.get_image()
@@ -448,8 +396,7 @@ class ImageGUI(Tk.Frame):
         except Exception:
             pass
 
-    def get_limits(self, values, nsamples=1000, contrast=0.25, max_reject=0.5,
-                   min_npixels=5, krej=2.5, max_iterations=5):
+    def get_limits(self, values, nsamples=1000, contrast=0.25, max_reject=0.5, min_npixels=5, krej=2.5, max_iterations=5):
         """
         Find the IRAF-like "zscale" signal limits for an image.
 
@@ -465,37 +412,29 @@ class ImageGUI(Tk.Frame):
         ----------
         values :   a two-dimensional numpy array for which the zscale limit
                    values are to be calculated.  Can be float or integer values.
-
         nsamples : the number of pixels to use to estimate the median and the
                    range (integer).
-
         contrast : The constrast parameter from IRAF imexam which controls the
                    range of values considered to estimate the minimum and
                    maximum values to use in the display, a real value between
                    0.0 and 1.0.
-
         max_reject : Parameter for the maximum fraction of rejected pixels,
                      a real values between 0.0 and 1.0; if more than this
                      fraction of pixels are rejected then the full range
                      of the data values is returned.
-
         min_npixels : An integer value for the minimum number of pixels that
                       are rejected by the iterative algorithm; if less than
                       this number of pixels is rejected the full data range is
                       returned.
-
         krej :  A float value, The number of standard deviations used for
                 rejection.  It must be positive.
-
         max_iterations : An integer value giving the maximum number of
                          rejection iterations to use.
 
         Returns
         -------
         vmin :  the minimum value for the zscale range, a real number
-
         vmax :  the maximum value for the zscale range, a real number
-
         """
         # Sample the image
         values = numpy.asarray(values)
@@ -525,8 +464,7 @@ class ImageGUI(Tk.Frame):
             if ngoodpix >= last_ngoodpix or ngoodpix < minpix:
                 break
 
-            fit = numpy.polyfit(xvalues, samples, deg=1,
-                                w=(~badpix).astype(int))
+            fit = numpy.polyfit(xvalues, samples, deg=1, w=(~badpix).astype(int))
             fitted = numpy.poly1d(fit)(xvalues)
 
             # Subtract fitted line from the data array
@@ -564,15 +502,10 @@ class ImageGUI(Tk.Frame):
         This routine tries to read a FITS file and returns the image, or None
         if there is an issue:
 
-        Parameters
-        ----------
-            None
-
         Returns
         -------
-            image :    a numpy two-dimensional array of image values, or None
-                       if there is an issue.
-
+        image :    a numpy two-dimensional array of image values, or None
+                   if there is an issue.
         """
         try:
             image = fits.getdata(self.imagefilename)
@@ -580,8 +513,7 @@ class ImageGUI(Tk.Frame):
             image = fits.getdata(self.imagefilename, ext=1)
         sh1 = image.shape
         if len(sh1) < 2:
-            print('Bad image dimensions in file %s.' %
-                  (self.imagefilename))
+            print('Bad image dimensions in file %s.' % (self.imagefilename))
             return None
         if len(sh1) == 3:
             image = numpy.squeeze(image[0, :, :])
@@ -625,32 +557,29 @@ class ImageGUI(Tk.Frame):
                 if value < 0.:
                     xstep = abs(value)
                     xmin = xmin - xstep
-                    xmax = xmax + 2.0*xstep
-                    nbins = int((xmax - xmin)/xstep)
-                    xmax = xmin + nbins*xstep
+                    xmax = xmax + 2.0 * xstep
+                    nbins = int((xmax - xmin) / xstep)
+                    xmax = xmin + nbins * xstep
                 else:
                     nbins = int(value)
                     nbins = max(nbins, 10)
             except ValueError:
                 nbins = 100
-            xstep = (xmax - xmin)/nbins
+            xstep = (xmax - xmin) / nbins
             xmin = xmin - xstep
-            xmax = xmax + 2.0*xstep
-            nbins = int((xmax - xmin)/xstep)
-            xmax = xmin + nbins*xstep
+            xmax = xmax + 2.0 * xstep
+            nbins = int((xmax - xmin) / xstep)
+            xmax = xmin + nbins * xstep
             self.imageHistogramLabelText = Tk.StringVar()
-            self.imageHistogramLabel = Tk.Label(
-                histogramwindow, textvariable=self.imageHistogramLabelText,
-                anchor=Tk.N, width=70)
+            self.imageHistogramLabel = Tk.Label(histogramwindow, textvariable=self.imageHistogramLabelText, anchor=Tk.N, width=70)
             self.imageHistogramLabel.pack()
             self.imageHistogramLabelText.set("Value:")
             self.p3 = Figure(figsize=(6, 6), dpi=100)
             sp1 = self.p3.add_subplot(1, 1, 1)
             c1 = FigureCanvasTkAgg(self.p3, master=histogramwindow)
             c1.mpl_connect("motion_notify_event", self.imageHistogramPosition)
-            histogramy, hxedges = numpy.histogram(
-                self.image.flatten(), nbins, range=[xmin, xmax])
-            histogramx = (hxedges[1:]+hxedges[0:-1])/2.
+            histogramy, hxedges = numpy.histogram(self.image.flatten(), nbins, range=[xmin, xmax])
+            histogramx = (hxedges[1:] + hxedges[0:-1]) / 2.
             if yscale_option == 1:
                 newyvalues = general_utilities.hybrid_transform(histogramy)
                 sp1.plot(histogramx, newyvalues, color='blue')
@@ -664,9 +593,9 @@ class ImageGUI(Tk.Frame):
                 sp1.set_yticks(tickmarks)
                 sp1.set_yticklabels(ticklabels)
             label = 'Bin size: %.5g\nNumber of Bins: %d' % (xstep, nbins)
-            xpos = xmin + 0.01*(xmax - xmin)
+            xpos = xmin + 0.01 * (xmax - xmin)
             ymin, ymax = sp1.get_ybound()
-            ypos = ymax + (ymax - ymin)*0.02
+            ypos = ymax + (ymax - ymin) * 0.02
             if self.imagefilename is None:
                 outstring = None
             else:
@@ -677,24 +606,16 @@ class ImageGUI(Tk.Frame):
             h1 = Tk.Frame(histogramwindow)
             h1.pack(side=Tk.TOP)
             h1.config(bg=BGCOL)
-            button = Tk.Button(
-                h1, text="Save values",
-                command=lambda: general_utilities.save_data_set_values(
-                    histogramx, histogramy, outstring))
+            button = Tk.Button(h1, text="Save values", command=lambda: general_utilities.save_data_set_values(histogramx, histogramy, outstring))
             button.pack(side=Tk.LEFT)
             button.config(bg=BGCOL)
-            button = Tk.Button(
-                h1, text="Save as PS",
-                command=lambda: general_utilities.save_ps_figure(self.p3))
+            button = Tk.Button(h1, text="Save as PS", command=lambda: general_utilities.save_ps_figure(self.p3))
             button.pack(side=Tk.LEFT)
             button.config(bg=BGCOL)
-            button = Tk.Button(
-                h1, text="Save as PNG",
-                command=lambda: general_utilities.save_png_figure(self.p3))
+            button = Tk.Button(h1, text="Save as PNG", command=lambda: general_utilities.save_png_figure(self.p3))
             button.pack(side=Tk.LEFT)
             button.config(bg=BGCOL)
-            button = Tk.Button(h1, text="Close",
-                               command=histogramwindow.destroy)
+            button = Tk.Button(h1, text="Close", command=histogramwindow.destroy)
             button.pack()
             button.config(bg=BGCOL)
         except Exception:
@@ -710,12 +631,7 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            event     a standard Tkinter event variable.
-
-        Returns
-        -------
-            No values are returned by this routine.
-
+        event:     a standard Tkinter event variable.
         """
         try:
             xpos = float(event.xdata)
@@ -735,13 +651,9 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            value :  the string value to be placed in the text field
-
-            field :  the tkinter text field variable where the string is to
-                     be put
-
-        No values are returned from this routine.
-
+        value :  the string value to be placed in the text field
+        field :  the tkinter text field variable where the string is to
+                 be put
         """
         try:
             s1 = field.get()
@@ -788,11 +700,8 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            window :  A tkinter Toplevel variable (or equivalent), the window
-                      to be closed.
-
-        No values are returned by this routine.
-
+        window :  A tkinter Toplevel variable (or equivalent), the window
+                  to be closed.
         """
         window.destroy()
 
@@ -805,31 +714,27 @@ class ImageGUI(Tk.Frame):
         """
         if (event.xdata is None) or (event.ydata is None):
             return
-        xpixel = int(self.zoom[1]+event.xdata+0.5)
-        ypixel = int(self.zoom[2]+event.ydata+0.5)
+        xpixel = int(self.zoom[1] + event.xdata + 0.5)
+        ypixel = int(self.zoom[2] + event.ydata + 0.5)
         if (xpixel is None) or (ypixel is None):
             return
         imshape = self.image.shape
         if event.key == 'l':
             yvalues = numpy.squeeze(self.image[ypixel, :])
-            xvalues = numpy.arange(imshape[0])+1
-            self.plotxy(xvalues, yvalues, symbol='-', colour='blue',
-                        xlabel='Column (Pixels)', ylabel='Pixel Value',
-                        title='Line %d' % (ypixel))
+            xvalues = numpy.arange(imshape[0]) + 1
+            self.plotxy(xvalues, yvalues, symbol='-', colour='blue', xlabel='Column (Pixels)', ylabel='Pixel Value', title='Line %d' % (ypixel))
         if event.key == 'c':
             yvalues = numpy.squeeze(self.image[:, xpixel])
-            xvalues = numpy.arange(imshape[1])+1
-            self.plotxy(xvalues, yvalues, symbol='-', colour='blue',
-                        xlabel='Line (Pixels)', ylabel='Pixel Value',
-                        title='Column %d' % (xpixel))
+            xvalues = numpy.arange(imshape[1]) + 1
+            self.plotxy(xvalues, yvalues, symbol='-', colour='blue', xlabel='Line (Pixels)', ylabel='Pixel Value', title='Column %d' % (xpixel))
         if event.key == 'j':
-            x0 = xpixel-10
+            x0 = xpixel - 10
             x0 = max(x0, 0)
             x1 = x0 + 22
             if x1 > imshape[1]:
                 x1 = imshape[1]
                 x0 = x1 - 22
-            y0 = ypixel-2
+            y0 = ypixel - 2
             y0 = max(y0, 0)
             y1 = y0 + 5
             if y1 > imshape[0]:
@@ -837,34 +742,28 @@ class ImageGUI(Tk.Frame):
                 y0 = y1 - 5
             subim = numpy.copy(self.image[y0:y1, x0:x1])
             vector = numpy.mean(subim, axis=0)
-            xvalues = numpy.arange(len(vector))+x0
+            xvalues = numpy.arange(len(vector)) + x0
             ind = numpy.argmax(vector)
             mind = numpy.argmin(vector)
-            start = numpy.asarray(
-                [xvalues[ind], vector[ind], 1., vector[mind]])
-            params, yfit = mpfitexpr.mpfitexpr(
-                "p[3]+p[1]/numpy.exp((x-p[0])*(x-p[0])/(2.*p[2]*p[2]))",
-                xvalues, vector, vector*0.+1., start)
+            start = numpy.asarray([xvalues[ind], vector[ind], 1., vector[mind]])
+            params, yfit = mpfitexpr.mpfitexpr("p[3]+p[1]/numpy.exp((x-p[0])*(x-p[0])/(2.*p[2]*p[2]))", xvalues, vector, vector * 0. + 1., start)
             try:
-                str1 = 'Centre: %.3f\nPeak: %.2f\nSigma: %.2f\nBaseline: %.2f' % (
-                    params[0], params[1], params[2], params[3])
+                str1 = 'Centre: %.3f\nPeak: %.2f\nSigma: %.2f\nBaseline: %.2f' % (params[0], params[1], params[2], params[3])
                 print(str1)
-            except:
+            except Exception:
                 pass
             tstring = 'Mean of lines (y) %d:%d' % (y0, y1)
-            self.plotxy(xvalues, vector, symbol='-', colour='blue',
-                        xlabel='x pixel position', ylabel='Signal (ADU/s)',
-                        title=tstring, ymodel=yfit, fitparams=params)
+            self.plotxy(xvalues, vector, symbol='-', colour='blue', xlabel='x pixel position', ylabel='Signal (ADU/s)', title=tstring, ymodel=yfit, fitparams=params)
             return
         if event.key == 'k':
-            y0 = ypixel-10
+            y0 = ypixel - 10
             if y0 < 0:
                 y0 = 0
             y1 = y0 + 22
             if y1 > imshape[0]:
                 y1 = imshape[0]
                 y0 = y1 - 22
-            x0 = xpixel-2
+            x0 = xpixel - 2
             if x0 < 0:
                 x0 = 0
             x1 = x0 + 5
@@ -873,30 +772,23 @@ class ImageGUI(Tk.Frame):
                 x0 = x1 - 5
             subim = numpy.copy(self.image[y0:y1, x0:x1])
             vector = numpy.mean(subim, axis=1)
-            xvalues = numpy.arange(len(vector))+y0
+            xvalues = numpy.arange(len(vector)) + y0
             ind = numpy.argmax(vector)
             mind = numpy.argmin(vector)
-            start = numpy.asarray(
-                [xvalues[ind], vector[ind], 1., vector[mind]])
-            params, yfit = mpfitexpr.mpfitexpr(
-                "p[3]+p[1]/numpy.exp((x-p[0])*(x-p[0])/(2.*p[2]*p[2]))",
-                xvalues, vector, vector*0.+1., start)
+            start = numpy.asarray([xvalues[ind], vector[ind], 1., vector[mind]])
+            params, yfit = mpfitexpr.mpfitexpr("p[3]+p[1]/numpy.exp((x-p[0])*(x-p[0])/(2.*p[2]*p[2]))", xvalues, vector, vector * 0. + 1., start)
             try:
-                str1 = 'Centre: %.3f\nPeak: %.2f\nSigma: %.2f\nBaseline: %.2f' % (
-                    params[0], params[1], params[2], params[3])
+                str1 = 'Centre: %.3f\nPeak: %.2f\nSigma: %.2f\nBaseline: %.2f' % (params[0], params[1], params[2], params[3])
                 print(str1)
-            except:
+            except Exception:
                 pass
             tstring = 'Mean of rows (x) %d:%d' % (y0, y1)
-            self.plotxy(xvalues, vector, symbol='-', colour='blue',
-                        xlabel='y pixel position', ylabel='Signal (ADU/s)',
-                        title=tstring, ymodel=yfit, fitparams=params)
+            self.plotxy(xvalues, vector, symbol='-', colour='blue', xlabel='y pixel position', ylabel='Signal (ADU/s)', title=tstring, ymodel=yfit, fitparams=params)
             return
-        self.xposition = self.zoom[1]+event.xdata
-        self.yposition = self.zoom[2]+event.ydata
+        self.xposition = self.zoom[1] + event.xdata
+        self.yposition = self.zoom[2] + event.ydata
         sh1 = self.image.shape
-        xmin, ymin = self.zoom_corner(sh1, self.zoom[0], self.xposition,
-                                      self.yposition)
+        xmin, ymin = self.zoom_corner(sh1, self.zoom[0], self.xposition, self.yposition)
         self.zoom[1] = xmin
         self.zoom[2] = ymin
         self.displayImage()
@@ -921,14 +813,13 @@ class ImageGUI(Tk.Frame):
         if (event.xdata is None) or (event.ydata is None):
             return
         sh1 = self.image.shape
-        xpixel = int(self.zoom[1]+event.xdata+0.5)
-        ypixel = int(self.zoom[2]+event.ydata+0.5)
+        xpixel = int(self.zoom[1] + event.xdata + 0.5)
+        ypixel = int(self.zoom[2] + event.ydata + 0.5)
         if (xpixel is None) or (ypixel is None):
             return
-        self.xposition = self.zoom[1]+event.xdata
-        self.yposition = self.zoom[2]+event.ydata
-        xmin, ymin = self.zoom_corner(sh1, self.zoom[0], self.xposition,
-                                      self.yposition)
+        self.xposition = self.zoom[1] + event.xdata
+        self.yposition = self.zoom[2] + event.ydata
+        xmin, ymin = self.zoom_corner(sh1, self.zoom[0], self.xposition, self.yposition)
         self.zoom[1] = xmin
         self.zoom[2] = ymin
         self.displayImage()
@@ -943,17 +834,12 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            event :   a motion-notify event from the image display window
-
-        Returns
-        -------
-            No values are returned by this routine.
-
+        event :   a motion-notify event from the image display window
         """
         try:
             event.canvas.get_tk_widget().focus_set()
-            x1 = int(self.zoom[1]+event.xdata+0.5)
-            y1 = int(self.zoom[2]+event.ydata+0.5)
+            x1 = int(self.zoom[1] + event.xdata + 0.5)
+            y1 = int(self.zoom[2] + event.ydata + 0.5)
             try:
                 value = '%.6g' % (self.image[y1, x1])
             except ValueError:
@@ -971,16 +857,9 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-
         getrange:   An optional boolean variable, if True the code resets
                     the display range, default is False.
-
         angle:      An optional rotation angle value to annoate the plot
-
-        Returns
-        -------
-
-        None
         """
         if self.image is not None:
             self.mplsubplot1.clear()
@@ -992,15 +871,15 @@ class ImageGUI(Tk.Frame):
                 general_utilities.put_value(zmax, self.maxField)
                 try:
                     zmin1, zmax1 = self.get_limits(self.image)
-                except:
+                except Exception:
                     zmin1 = 0.
                     zmax1 = 1.
                 general_utilities.put_value(zmin1, self.zsminField)
                 general_utilities.put_value(zmax1, self.zsmaxField)
             zmin = float(self.minField.get())
             zmax = float(self.maxField.get())
-            zsmin = float(self.zsminField.get())
-            zsmax = float(self.zsmaxField.get())
+            # zsmin = float(self.zsminField.get())
+            # zsmax = float(self.zsmaxField.get())
             cind = self.colourScheme.current()
             scaleOption = self.scaleType.get()
             try:
@@ -1022,37 +901,28 @@ class ImageGUI(Tk.Frame):
                 zmax = float(s1)
             if (scaleOption == 0) or self.zscale_flag:
                 newimage = numpy.copy(startimage)
-                im1 = self.mplsubplot1.imshow(
-                    newimage, cmap=self.colourLabels[cind],
-                    origin='lower', vmin=zmin, vmax=zmax)
+                im1 = self.mplsubplot1.imshow(newimage, cmap=self.colourLabels[cind], origin='lower', vmin=zmin, vmax=zmax)
             elif scaleOption == 1:
                 newimage = self.logTransform(startimage, zmin, zmax)
                 zmin1 = numpy.min(newimage)
                 zmax1 = numpy.max(newimage)
-                im1 = self.mplsubplot1.imshow(
-                    newimage, cmap=self.colourLabels[cind], origin='lower',
-                    vmin=zmin1, vmax=zmax1)
+                im1 = self.mplsubplot1.imshow(newimage, cmap=self.colourLabels[cind], origin='lower', vmin=zmin1, vmax=zmax1)
             else:
                 newimage = self.sqrtTransform(startimage, zmin, zmax)
                 zmin1 = numpy.min(newimage)
                 zmax1 = numpy.max(newimage)
-                im1 = self.mplsubplot1.imshow(
-                    newimage, cmap=self.colourLabels[cind], origin='lower',
-                    vmin=zmin1, vmax=zmax1)
+                im1 = self.mplsubplot1.imshow(newimage, cmap=self.colourLabels[cind], origin='lower', vmin=zmin1, vmax=zmax1)
             if angle is not None:
                 try:
                     value = float(angle)
-                    self.mplsubplot1.set_title(
-                        'Rotation angle = %.3f' % (value))
+                    self.mplsubplot1.set_title('Rotation angle = %.3f' % (value))
                     self.angle = value
-                    self.mplsubplot1.set_title(
-                        'Rotation angle = %.3f' % (value))
-                except:
+                    self.mplsubplot1.set_title('Rotation angle = %.3f' % (value))
+                except Exception:
                     pass
             else:
-                if not self.angle is None:
-                    self.mplsubplot1.set_title(
-                        'Rotation angle = %.3f' % (self.angle))
+                if self.angle is not None:
+                    self.mplsubplot1.set_title('Rotation angle = %.3f' % (self.angle))
             self.mplsubplot1.get_xaxis().set_visible(self.showImageAxes)
             self.mplsubplot1.get_yaxis().set_visible(self.showImageAxes)
             if self.showImageAxes:
@@ -1064,7 +934,7 @@ class ImageGUI(Tk.Frame):
                 ticklist = numpy.zeros((11), dtype=numpy.float32)
                 label1 = numpy.zeros((11), dtype=numpy.float32)
                 for lv in range(11):
-                    ticklist[lv] = 0.3*lv
+                    ticklist[lv] = 0.3 * lv
                     vout = self.invLogTransform(ticklist[lv], zmin, zmax)
                     label1[lv] = '%.3g' % (vout)
             if scaleOption == 2:
@@ -1077,26 +947,18 @@ class ImageGUI(Tk.Frame):
                     label1[lv] = '%.3g' % (vout)
             if cbflag == 0:
                 if scaleOption > 0:
-                    self.colourBarVariable = self.mplfig1.colorbar(
-                        im1, cmap=self.colourLabels[cind],
-                        orientation='vertical', ticks=ticklist)
+                    self.colourBarVariable = self.mplfig1.colorbar(im1, cmap=self.colourLabels[cind], orientation='vertical', ticks=ticklist)
                     self.colourBarVariable.ax.set_yticklabels(label1)
                 else:
-                    self.colourBarVariable = self.mplfig1.colorbar(
-                        im1, cmap=self.colourLabels[cind],
-                        orientation='vertical')
+                    self.colourBarVariable = self.mplfig1.colorbar(im1, cmap=self.colourLabels[cind], orientation='vertical')
                 self.colourBarVariable.ax.get_yaxis().labelpad = 15
                 self.colourBarVariable.ax.set_ylabel(cblabel, rotation=90)
             if cbflag == 1:
                 if scaleOption > 0:
-                    self.colourBarVariable = self.mplfig1.colorbar(
-                        im1, cmap=self.colourLabels[cind],
-                        orientation='horizontal', ticks=ticklist)
+                    self.colourBarVariable = self.mplfig1.colorbar(im1, cmap=self.colourLabels[cind], orientation='horizontal', ticks=ticklist)
                     self.colourBarVariable.ax.set_xticklabels(label1)
                 else:
-                    self.colourBarVariable = self.mplfig1.colorbar(
-                        im1, cmap=self.colourLabels[cind],
-                        orientation='horizontal')
+                    self.colourBarVariable = self.mplfig1.colorbar(im1, cmap=self.colourLabels[cind], orientation='horizontal')
                 self.colourBarVariable.ax.set_xlabel(cblabel, rotation=0)
             sh1 = self.image.shape
             if self.zoom[0] == 1:
@@ -1110,16 +972,13 @@ class ImageGUI(Tk.Frame):
                         xline2 = xline2 - 931
                         yline1 = yline1 - 175
                         yline2 = yline2 - 175
-                    self.mplsubplot1.plot(xline1, yline1, color='white',
-                                          linestyle='dashed', linewidth=1.0)
-                    self.mplsubplot1.plot(xline2, yline2, color='white',
-                                          linestyle='dotted', linewidth=1.0)
+                    self.mplsubplot1.plot(xline1, yline1, color='white', linestyle='dashed', linewidth=1.0)
+                    self.mplsubplot1.plot(xline2, yline2, color='white', linestyle='dotted', linewidth=1.0)
 
                 elif sh1[0] == 2322:
                     xline1 = numpy.asarray([137, 2185, 2185, 137, 137])
                     yline1 = numpy.asarray([137, 137, 2185, 2185, 137])
-                    self.mplsubplot1.plot(xline1, yline1, color='white',
-                                          linestyle='dotted', linewidth=1.0)
+                    self.mplsubplot1.plot(xline1, yline1, color='white', linestyle='dotted', linewidth=1.0)
             self.canvas1.draw()
 
     def invLogTransform(self, value, zmin, zmax):
@@ -1131,21 +990,18 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-           value : a real value, by assumption, in the range from 1 to 1000
-
-            zmin :  a real value, the signal minimum for the logarithmic
-                    mapping
-
-            zmax :  a real value, the signal maximum for the logarithmic
-                    mapping
+       value : a real value, by assumption, in the range from 1 to 1000
+        zmin :  a real value, the signal minimum for the logarithmic
+                mappin
+        zmax :  a real value, the signal maximum for the logarithmic
+                mapping
 
         Returns
         -------
-            vout   The original image value corresponding to the new image
-                   value, a real number
-
+        vout   The original image value corresponding to the new image
+               value, a real number
         """
-        newvalue = value*1
+        newvalue = value * 1
         if value < 0.:
             newvalue = 0.
         if value > 3.:
@@ -1153,7 +1009,7 @@ class ImageGUI(Tk.Frame):
         v1 = math.pow(10., newvalue)
         v1 = max(v1, 1.0)
         v1 = min(v1, 1000.0)
-        v2 = (v1 - 1.)/999.9
+        v2 = (v1 - 1.) / 999.9
         vout = zmin + (zmax - zmin) * v2
         return vout
 
@@ -1168,27 +1024,25 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            image :  a numpy array of (assumed) floating point or integer
-                     values
-
-            zmin :   a real value, the minimum of the range for the
-                     transformation
-
-            zmax :   a real value, the maximum of the range for the
-                     transformation
+        image :  a numpy array of (assumed) floating point or integer
+                 values
+        zmin :   a real value, the minimum of the range for the
+                 transformation
+        zmax :   a real value, the maximum of the range for the
+                 transformation
 
         Returns
         -------
-            newimage : a numpy image of the same dimensions as the input
-                       image, with the transformation applied; floating
-                       point values in the range between 0.0 and 3.0 are
-                       contained in the new image
+        newimage : a numpy image of the same dimensions as the input
+                   image, with the transformation applied; floating
+                   point values in the range between 0.0 and 3.0 are
+                   contained in the new image
         """
         newimage = numpy.copy(image)
         newimage[newimage < zmin] = zmin
         newimage[newimage > zmax] = zmax
         zrange = zmax - zmin
-        newimage = 1. + 999.*(newimage - zmin)/zrange
+        newimage = 1. + 999. * (newimage - zmin) / zrange
         newimage = numpy.log10(newimage)
         self.transvalues = [zmin, zmax]
         return newimage
@@ -1202,18 +1056,16 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            value : a real value, by assumption
-
-            zmin :  a real value, the signal minimum for the sqrt mapping
-                    (not used, present for uniformity with the log call)
-
-            zmax :  a real value, the signal maximum for the sqrt mapping
-                   (not used, present for uniformity with the log call)
+        value : a real value, by assumption
+        zmin :  a real value, the signal minimum for the sqrt mapping
+                (not used, present for uniformity with the log call)
+        zmax :  a real value, the signal maximum for the sqrt mapping
+               (not used, present for uniformity with the log call)
 
         Returns
         -------
-            v1 :  The original image value corresponding to the new image
-                  value, a real number
+        v1 :  The original image value corresponding to the new image
+              value, a real number
 
         """
         newvalue = abs(value)
@@ -1232,28 +1084,25 @@ class ImageGUI(Tk.Frame):
 
         Parameters
         ----------
-            image :  a numpy array of (assumed) floating point or integer
-                     values
-
-            zmin :   a real value, the minimum of the range for the
-                     transformation (not currently used, present so the
-                     form of the call matches the other transformations)
-
-            zmax  :   a real value, the maximum of the range for the
-                      transformation (not currently used)
+        image :  a numpy array of (assumed) floating point or integer
+                 values
+        zmin :   a real value, the minimum of the range for the
+                 transformation (not currently used, present so the
+                 form of the call matches the other transformations)
+        zmax  :   a real value, the maximum of the range for the
+                  transformation (not currently used)
 
         Returns
         -------
-            newimage  a numpy image of the same dimensions as the input
-                       image, with the transformation applied; all values
-                       in the image are replaced by the square-root of the
-                       absolute value times the original sign
+        newimage  a numpy image of the same dimensions as the input
+                   image, with the transformation applied; all values
+                   in the image are replaced by the square-root of the
+                   absolute value times the original sign
         """
         newimage = numpy.sqrt(numpy.abs(image))
         newimage[image < 0.] = -1. * newimage[image < 0.]
         self.transvalues = [1.]
         return newimage
-
 
     def plotxy(self, xvalues, yvalues, **parameters):
         """
@@ -1269,7 +1118,7 @@ class ImageGUI(Tk.Frame):
         ymodel = parameters.get("ymodel")
         params = parameters.get("fitparams")
         if sym is None:
-            sym='-'
+            sym = '-'
         if colour is None:
             colour = 'black'
         if markersize is None:
@@ -1277,11 +1126,10 @@ class ImageGUI(Tk.Frame):
         pyplot.plot(xvalues, yvalues, sym, color=colour, markersize=markersize)
         if parameters.get("title") is not None:
             pyplot.title(parameters.get("title"))
-        if not ymodel is None:
+        if ymodel is not None:
             pyplot.plot(xvalues, ymodel, ':', color='red')
-            if not params is None:
-                str1 = 'Fit: Centre %.3f Peak %.2f Sigma %.2f Baseline %.2f' % (
-                    params[0], params[1], params[2], params[3])
+            if params is not None:
+                str1 = 'Fit: Centre %.3f Peak %.2f Sigma %.2f Baseline %.2f' % (params[0], params[1], params[2], params[3])
                 pyplot.suptitle(str1)
         if parameters.get("xlabel") is not None:
             pyplot.xlabel(parameters.get("xlabel"))
