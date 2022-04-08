@@ -33,7 +33,7 @@ FILTERNAMES = ['F090W', 'F115W', 'F140M', 'F150W', 'F158M', 'F200W']
 GRISMNAMES = ['GR150R', 'GR150C', 'GR700XD']
 
 
-class grismOverlap(Tk.Frame):
+class GrismOverlap(Tk.Frame):
     """
     This class brings up the Grism Overlap Tool window.
 
@@ -634,5 +634,5 @@ if __name__ == "__main__":
     #root.tk_setPalette(background='white', foreground='black',
     #    activeBackground='black', activeForeground='white')
     #root.title('NIRISS Grism Overlap Tool')
-    offsettool = grismOverlap(root)
+    offsettool = GrismOverlap(root)
     root.mainloop()
