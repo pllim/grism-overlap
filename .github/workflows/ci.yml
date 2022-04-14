@@ -11,7 +11,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: macos-latest
         python-version: [3.7, 3.8, 3.9]
 
     steps:
@@ -50,4 +50,4 @@ jobs:
           echo " "
           echo "Running pytests"
           echo " "
-          pytest grism_overlap/tests/
+          pytest grism-overlap/tests/
