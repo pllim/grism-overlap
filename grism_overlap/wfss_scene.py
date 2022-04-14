@@ -54,12 +54,12 @@ def wfss_scene(scene_image, filtername, grismname, x0, y0, psffile=None, through
         return None
 
     # Get the spot mask data
-    spotpath = resource_filename('grism_overlap', 'files/occulting_spots_mask.fits')
+    spotpath = resource_filename('grism_overlap', 'grism_overlap/files/occulting_spots_mask.fits')
     spotmask = fits.getdata(spotpath)
 
     # Get the psf image
     if psffile is None:
-        psffile = resource_filename('grism_overlap', 'files/{}_{}_psfimage.fits'.format(filtername, grismname).lower())
+        psffile = resource_filename('grism_overlap', 'grism_overlap/files/{}_{}_psfimage.fits'.format(filtername, grismname).lower())
     psfimage = fits.getdata(psffile)
 
     # Make the final image
