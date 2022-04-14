@@ -42,16 +42,6 @@ jobs:
           echo " "
           python setup.py develop
 
-          # echo " "
-          # echo "Reinstall numpy to fix numpy.core.multiarray error"
-          # echo " "
-          pip install -U numpy
-
-          echo " "
-          echo "Testing package installation"
-          echo " "
-          python -c "import grism_overlap; print('Version: ' + grism_overlap.__version__); print('Path: ' + grism_overlap.__path__[0])"
-
           echo " "
           echo "The conda environment being used:"
           echo " "
