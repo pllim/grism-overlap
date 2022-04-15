@@ -50,4 +50,4 @@ jobs:
           echo " "
           echo "Running pytests"
           echo " "
-          pytest grism-overlap/tests/
+          pytest grism_overlap/tests/
