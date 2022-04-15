@@ -48,6 +48,6 @@ jobs:
           $CONDA/bin/conda env export
 
           echo " "
-          echo "Running pytests"
+          echo "Running pytests in $PWD"
           echo " "
           pytest tests/
