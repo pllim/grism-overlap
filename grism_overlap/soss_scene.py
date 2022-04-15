@@ -39,7 +39,7 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
         return None
 
     # Get the spot mask data
-    spotpath = resource_filename('grism_overlap', 'grism_overlap/files/occulting_spots_mask.fits')
+    spotpath = resource_filename('grism_overlap', 'files/occulting_spots_mask.fits')
     spotmask = fits.getdata(spotpath)
 
     # Get the psf image
@@ -82,7 +82,7 @@ def get_gr700_psf(files=None):
         The SOSS psf frame
     """
     if files is None:
-        files = sorted(glob(resource_filename('grism_overlap', 'grism_overlap/files/gr700xd_psfimage*')))
+        files = sorted(glob(resource_filename('grism_overlap', 'files/gr700xd_psfimage*')))
 
     # Combine files into one image
     fullframe = np.concatenate([np.load(file) for file in files], axis=0)
@@ -103,7 +103,7 @@ def save_gr700_psf(psfname, nfiles=16):
     psfimage = fits.getdata(psfname)
 
     # Chop it up into parts and save locally
-    filename = resource_filename('grism_overlap', 'grism_overlap/files/gr700xd_psfimage*.npy')
+    filename = resource_filename('grism_overlap', 'files/gr700xd_psfimage*.npy')
     ydim = int(8192 / 16)
     for filenum in range(nfiles):
         fname = filename.replace('*', '{:02d}'.format(filenum))
