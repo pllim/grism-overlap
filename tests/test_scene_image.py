@@ -3,7 +3,7 @@ Tests for soss_scene.py module
 """
 from pkg_resources import resource_filename
 
-from grism_overlap.grism_overlap import scene_image as si
+from grism_overlap import scene_image as si
 
 
 def test_make_star_image():
