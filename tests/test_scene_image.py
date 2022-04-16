@@ -28,7 +28,7 @@ def test_make_star_image():
     # Good filters
     for n, filt in enumerate(filters):
         scene, stars = si.make_star_image(file, pos, filt)
-        if n < 5:
+        if n <= 5:
             assert scene is not None
             assert all([i is not None for i in stars])
         else:
