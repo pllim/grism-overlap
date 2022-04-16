@@ -9,7 +9,7 @@ from grism_overlap import scene_image as si
 def test_make_star_image():
     """Test of the make_star_image function"""
     # Get the input
-    file = resource_filename('grism_overlap', 'grism_overlap/files/stars_bd60d1753_gaiadr3_allfilters.txt')
+    file = resource_filename('grism_overlap', 'files/stars_bd60d1753_gaiadr3_allfilters.txt')
     pos = 	261.21781401047, 60.43076384536
 
     # Valid filters
@@ -28,7 +28,7 @@ def test_make_star_image():
     # Good filters
     for n, filt in enumerate(filters):
         scene, stars = si.make_star_image(file, pos, filt)
-        if n <= 5:
+        if n < 5:
             assert scene is not None
             assert all([i is not None for i in stars])
         else:
