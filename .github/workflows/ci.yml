@@ -1,0 +1,53 @@
+name: Grism Overlap CI
+
+on: [push, pull_request]
+
+jobs:
+
+  GrismOverlap-CI:
+
+    name: Python - ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 5
+      matrix:
+        os: [macos-latest]
+        python-version: [3.7, 3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: grism_overlap-${{ matrix.python-version }}
+
+      - name: Build grism_overlap conda environment and run tests
+        shell: bash -l {0}
+        run: |
+
+          echo "Setting useful environment variables:"
+          echo " "
+          export PYTHONVERSION=${{ matrix.python-version }}
+          echo "PYTHONVERSION: $PYTHONVERSION"
+
+          echo " "
+          echo "Installing grism_overlap conda environment"
+          echo " "
+          cd $RUNNER_WORKSPACE/
+          cd grism-overlap/
+          $CONDA/bin/conda env update -f env/environment-${{ matrix.python-version }}.yml -n grism_overlap-${{ matrix.python-version }}
+
+          echo " "
+          echo "Installing grism_overlap package"
+          echo " "
+          python setup.py develop
+
+          echo " "
+          echo "The conda environment being used:"
+          echo " "
+          $CONDA/bin/conda env export
+
+          echo " "
+          echo "Running pytests in $PWD"
+          echo " "
+          pytest tests/

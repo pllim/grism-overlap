@@ -3,7 +3,7 @@ Tests for soss_scene.py module
 """
 import numpy as np
 
-from grism_overlap.grism_overlap import soss_scene as sc
+from grism_overlap import soss_scene as sc
 
 
 def test_soss_scene():

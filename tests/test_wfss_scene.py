@@ -3,7 +3,7 @@ Tests for wfss_scene.py module
 """
 import numpy as np
 
-from grism_overlap.grism_overlap import wfss_scene as sc
+from grism_overlap import wfss_scene as sc
 
 
 def test_wfss_scene():

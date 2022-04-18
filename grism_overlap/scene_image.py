@@ -108,7 +108,7 @@ def make_star_image(star_file_name, position, filter1, path='./',
         if filter1 == fnames[loop]:
             findex = loop
     if findex > 5:
-        print('Filter %d is not a WFSS blocking filter.')
+        print('Filter {} is not a WFSS blocking filter.'.format(filter1))
         return None, blank
     try:
         infile = open(star_file_name, 'r')
