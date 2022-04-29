@@ -209,7 +209,7 @@ class GrismOverlap(Tk.Frame):
         anglefield.pack()
         self.anglevar = Tk.DoubleVar()
         # The below 'from' kwarg is in the tkinter method, even though it is bad python
-        self.angle_slider = Tk.Scale(anglefield, orient=Tk.HORIZONTAL, length=720, from=0., to=360., resolution=0.01, label='Rotation Angle (degrees)', variable=self.anglevar)
+        self.angle_slider = Tk.Scale(anglefield, orient=Tk.HORIZONTAL, length=720, from_=0., to=360., resolution=0.01, label='Rotation Angle (degrees)', variable=self.anglevar)
         self.angle_slider.bind("<ButtonRelease-1>", self.apply_angle)
         self.angle_slider.bind("<KeyPress>", self.apply_angle)
         self.angle_slider.pack()
