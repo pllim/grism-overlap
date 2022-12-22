@@ -876,8 +876,8 @@ class ImageGUI(Tk.Frame):
                     zmax1 = 1.
                 general_utilities.put_value(zmin1, self.zsminField)
                 general_utilities.put_value(zmax1, self.zsmaxField)
-            zmin = float(self.minField.get())
-            zmax = float(self.maxField.get())
+            # zmin = float(self.minField.get())
+            # zmax = float(self.maxField.get())
             # zsmin = float(self.zsminField.get())
             # zsmax = float(self.zsmaxField.get())
             cind = self.colourScheme.current()

@@ -7,10 +7,10 @@ from pkg_resources import resource_filename
 
 from astropy.io import fits
 import numpy as np
-from scipy import signal
+from scipy import signal, ndimage
 
 
-def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
+def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8, angle=None):
     """
     Convolve a scene image with the SOSS PSF and return dispersed image over
     the 2322x2322 pixel POM image area. The scene image is multiplied by the
@@ -47,6 +47,9 @@ def soss_scene(scene_image, sossoffset=True, psffile=None, throughput=0.8):
         psfimage = fits.getdata(psffile)
     else:
         psfimage = get_gr700_psf()
+
+    if angle is not None:
+        psfimage = ndimage.rotate(psfimage, angle)
 
     # Check for offset
     if not sossoffset:

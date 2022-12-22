@@ -38,13 +38,88 @@ import math
 
 import astropy.io.fits as fits
 from astropy.modeling.models import Sersic2D
+from astropy.io import ascii as ii
+from astropy.coordinates import SkyCoord
 import numpy
 import pysiaf
 import scipy.signal as signal
 import scipy.ndimage as ndimage
 
 
-def make_star_image(star_file_name, position, filter1, path='./',
+def generate_image_and_table(star_table, position, rotation=0., simple=False, exclude=None):
+    """
+    Do the work of making a star scene image.  Each star is one pixel in size.
+
+    Parameters
+    ----------
+
+    star_table:    A table of catalogue values for the scene
+
+    position:      A two-element list giving the image center (RA, Dec) in
+                   degrees
+
+    rotation:      An optional float value, the rotation angle in degrees E
+                   of N
+
+    simple:        A boolean value, if True use the simple projection to get
+                   pixel positions, if False use pysiaf.  The latter is the
+                   default.
+
+
+    Returns
+    -------
+
+    scene_image:   A 4231x4231 numpy float array, the scene image.
+
+    new_star_list:   A new list, same structure as star_list, containts the
+                     values for the stars within the field
+    """
+    # Empty image and list of sources to keep
+    scene_image = numpy.zeros((4231, 4231), dtype=numpy.float32)
+    keep = []
+
+    if exclude is None:
+        exclude = []
+
+    # Place each source on the image
+    # Index 0 is the center of the frame, not a source
+    xloc, yloc, names = [], [], []
+    for idx, source in enumerate(star_table):
+
+        # Put source on the image
+        if idx not in exclude:
+            if simple:
+                xpix, ypix = relpos(source['x_or_RA'], source['y_or_Dec'],
+                                    position[0], position[1], rotation,
+                                    0.0656)
+                xpix = xpix + 1023.5
+                ypix = ypix + 1023.5
+            else:
+                xpix, ypix = get_pixel(source['x_or_RA'], source['y_or_Dec'],
+                                       position[0], position[1], rotation,
+                                       'NIRISS', 'NIS_CEN')
+            nxpix = int(xpix) + 1092
+            nypix = int(ypix) + 1092
+            if (nxpix >= 0) and (nxpix < 4231) and (nypix >= 0) and (nypix < 4231):
+                scene_image[nypix, nxpix] = scene_image[nypix, nxpix] + source['flux']
+                keep.append(idx)
+
+                xloc.append(nxpix)
+                yloc.append(nypix)
+                names.append(str(source['index']))
+
+    # Just keep sources in the FOV
+    new_star_table = star_table[keep]
+
+    # Add x and y detector locations to table
+    new_star_table['xloc'] = xloc
+    new_star_table['yloc'] = yloc
+    new_star_table['name'] = names
+
+    return scene_image, new_star_table
+
+
+def make_star_image_and_table(star_file_name, position, filter1, exclude=None,
                     simple=False):
     """
     Make the star scene image from an input file of positions/brightnesses,
@@ -65,6 +140,98 @@ def make_star_image(star_file_name, position, filter1, path='./',
 
     path:            an optional string variable pointing to where the PSF
                      images are stored, defaults to the current directory
+
+    target:          a boolean, if True the calculation includes the target
+                     if False it is just the contaminants
+
+    simple:          an optional Boolean variable, if True use the simple
+                     sky->pixel calculation, if False, the default, use
+                     pysiaf
+
+    Returns
+    -------
+
+    scene_image:    a numpy float array of the brightness values (ADU/s) for
+                    the stars in the scene.  Stars are true point sources in
+                    this image, occupying a single pixel.  The image is 4231
+                    pixels square with pixel (2116, 2116) being the reference
+                    position.  The image is undistorted.  Each star is put at
+                    the nearest pixel position.  The image is in the standard
+                    orientation.  The NIRISS detector field is then pixels
+                    [1092:3140, 1092:3140] by assumption.  The larger POM field
+                    is assumed to cover pixels [955:3276, 955:3276].
+
+                    None is returned if there is an issue.
+
+    star_list:      A tuple of the [ra, dec, signal] values found within the
+                    scene, each element being a numpy array; if no stars are
+                    found in the field then the values are None.
+    """
+    mag0 = [1.243877e+11, 1.041117e+11, 3.256208e+10, 6.172448e+10,
+            2.877868e+10, 4.245261e+10, 2.472333e+10, 1.626810e+10,
+            2.930977e+09, 1.902929e+09, 9.948760e+09, 1.703311e+09]
+    aboff = [0.48790, 0.74678, 1.07748, 1.17275, 1.27628, 1.65571,
+             2.25786, 2.77045, 2.91546, 3.14410, 3.19330, 3.37689]
+    fnames = ['F090W', 'F115W', 'F140M', 'F150W', 'F158M', 'F200W',
+              'F277W', 'F356W', 'F380M', 'F430M', 'F444W', 'F480M']
+
+    # Check for valid filter
+    if not filter1.upper() in fnames:
+        raise ValueError('Filter {} not recognized. Try {}'.format(filter1, fnames))
+
+    findex = fnames.index(filter1)
+    mag0 = numpy.asarray(mag0) / 1.612
+    aboff = numpy.power(10., numpy.asarray(aboff) * 0.4)
+
+    # Check formatting
+    infile = open(star_file_name, 'r')
+    lines = infile.readlines(2)
+    infile.close()
+    abmag_flag = False
+    for line in lines:
+        if ('pixel' in line) and ('#' in line):
+            raise ValueError('Error: star positions must be in (RA, Dec) form.')
+        if ('abmag' in line) and ('#' in line):
+            abmag_flag = True
+
+    # Easier!
+    table = ii.read(star_file_name)
+    table['flux'] = 3 * mag0[findex] / (10.**(table['niriss_' + filter1.lower() + '_magnitude'] * 0.4)) * (aboff[findex] if abmag_flag else 1.)
+
+    # Measure distances, assume closest is target, then sort
+    center = SkyCoord(position[0], position[1], frame='icrs', unit="deg")
+    table['distance'] = [center.separation(SkyCoord(i['x_or_RA'], i['y_or_Dec'], frame='icrs', unit="deg")).arcsecond for i in table]
+    table.sort('distance')
+
+    # Generate the image
+    scene_image, new_star_table = generate_image_and_table(table, position, simple=simple, exclude=exclude)
+
+    return scene_image, new_star_table
+
+
+def make_star_image(star_file_name, position, filter1, simple=False):
+    """
+    Make the star scene image from an input file of positions/brightnesses,
+    each star on a single pixel.
+
+    Parameters
+    ----------
+
+    star_file_name:  a string variable giving the filename for the list of
+                     stars to use, with (RA, Dec) sky positions and the
+                     NIRISS magnitudes
+
+    position:        a two-element float tuple with the (RA, Dec) values in
+                     decimal degrees for the centre of the field
+
+    filter1:         a string variable giving the NIRISS filter name for which
+                     to make the scene image
+
+    path:            an optional string variable pointing to where the PSF
+                     images are stored, defaults to the current directory
+
+    target:          a boolean, if True the calculation includes the target
+                     if False it is just the contaminants
 
     simple:          an optional Boolean variable, if True use the simple
                      sky->pixel calculation, if False, the default, use
@@ -111,6 +278,7 @@ def make_star_image(star_file_name, position, filter1, path='./',
         print('Filter {} is not a WFSS blocking filter.'.format(filter1))
         return None, blank
     try:
+
         infile = open(star_file_name, 'r')
         lines = infile.readlines()
         infile.close()
@@ -146,23 +314,23 @@ def make_star_image(star_file_name, position, filter1, path='./',
                 except Exception:
                     print('Unable to read the position/magnitude values.')
                     return None, blank
-        lines = 0
+
         signal1 = magvalues * 0.
         for loop in range(len(magvalues)):
             signal1[loop] = mag0[findex] / (10.**(magvalues[loop] * 0.4))
             if abmag_flag:
                 signal1[loop] = signal1[loop] * aboff[findex]
         star_list = [ravalues, decvalues, signal1]
-        scene_image, new_star_list = generate_image(star_list, position,
-                                                    simple=simple)
+        scene_image, new_star_list = generate_image(star_list, position, simple=simple)
+
         return scene_image, new_star_list
-    except Exception:
-        print('An error occurred generating the scene image.')
+
+    except Exception as e:
+        print(e)
         return None, blank
 
 
-def make_galaxy_image(galaxy_file_name, position, filter1, path='./',
-                      simple=False):
+def make_galaxy_image(galaxy_file_name, position, filter1, simple=False):
     """
     Make the galaxy scene image from an input parameter file, in standard
     orientation (not convolved with a PSF)
@@ -447,7 +615,8 @@ def rotate_image(scene_image, angle):
         return scene_image
     zmin = numpy.min(scene_image)
     sh1 = scene_image.shape
-    rotated_image = ndimage.rotate(scene_image, -rotangle, cval=zmin, order=5)
+    # rotated_image = ndimage.rotate(scene_image, -rotangle, cval=zmin, order=5)
+    rotated_image = ndimage.rotate(scene_image, rotangle, cval=zmin, order=5)
     sh2 = rotated_image.shape
     if sh2 != sh1:
         xmin = (sh2[1] - sh1[1]) // 2
@@ -611,13 +780,15 @@ def relpos(ra1, dec1, ra0, dec0, rotation, pixelsize):
     dtor = math.radians(1.)
     if (ra1 == ra0) and (dec1 == dec0):
         return 0., 0.
-    angle = math.atan2(math.sin((ra1 - ra0) * dtor), math.cos(dec0 * dtor) * math.tan(dec1 * dtor) - math.sin(dec0 * dtor) * math.cos((ra1 - ra0) * dtor)) / dtor
+    # angle = math.atan2(math.sin((ra1 - ra0) * dtor), math.cos(dec0 * dtor) * math.tan(dec1 * dtor) - math.sin(dec0 * dtor) * math.cos((ra1 - ra0) * dtor)) / dtor
+    angle = math.atan2(math.sin((ra0-ra1)*dtor), math.cos(dec0*dtor) * math.tan(dec1*dtor) - math.sin(dec0*dtor)*math.cos((ra0-ra1)*dtor))/dtor
     if angle > 360.:
         angle = angle - 360.
     if angle < 0.:
         angle = angle + 360.
     angle = angle - rotation
-    arcdist = math.sin(dec0 * dtor) * math.sin(dec1 * dtor) + math.cos(dec0 * dtor) * math.cos(dec1 * dtor) * math.cos(dtor * (ra1 - ra0))
+    # arcdist = math.sin(dec0 * dtor) * math.sin(dec1 * dtor) + math.cos(dec0 * dtor) * math.cos(dec1 * dtor) * math.cos(dtor * (ra1 - ra0))
+    arcdist = math.sin(dec0 * dtor) * math.sin(dec1 * dtor) + math.cos(dec0 * dtor) * math.cos(dec1 * dtor) * math.cos(dtor * (ra0 - ra1))
     if abs(arcdist) > 1.:
         arcdist = 1.
     arcdist = math.acos(arcdist)

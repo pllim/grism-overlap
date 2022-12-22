@@ -1,17 +1,22 @@
-name: grism_overlap-3.9
+name: grism_overlap-3.8
 channels:
-  - conda-forge
   - http://ssb.stsci.edu/astroconda
+  - conda-forge
   - defaults
 dependencies:
-  - astropy>=4.3.1
-  - ipython>=7.12.0
-  - jupyter>=1.0.0
-  - numpy>=1.18.1
-  - pytest>=5.4.3
-  - python>3.9, <3.10
-  - scipy>=1.2.1
-  - pysiaf>=0.11.0
-  - matplotlib>=3.3.4
+  - pip
+  - python==3.9.9
   - pip:
+    - astropy==5.0.4
+    - astroquery==0.4.6
+    - bokeh>=2.2.3
+    - hotsoss
+    - ipython==8.2.0
+    - jupyter==1.0.0
+    - numpy==1.22.3
+    - PyQt5==5.15.6
+    - pytest==7.1.1
+    - scipy==1.8.0
+    - pysiaf==0.15.0
+    - matplotlib==3.5.1
     - tk>=0.1.0

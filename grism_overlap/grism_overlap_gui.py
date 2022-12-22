@@ -307,6 +307,7 @@ class GrismOverlap(Tk.Frame):
             galaxies_image = None
             extname = self.galaxy_entry.get()
             position_str = self.position_entry.get()
+
             psf_path = self.psf_path_entry.get()
             if len(psf_path) == 0:
                 psf_path = './'
@@ -342,6 +343,26 @@ class GrismOverlap(Tk.Frame):
                 position = self.mean_position(path+starname)
                 outstr = '%15.8f %15.8f' % (position[0], position[1])
                 general_utilities.put_value(outstr, self.position_entry)
+
+            # Try to generate star file on the fly
+            if starname == "":
+                general_utilities.put_message(self.message_area, 'No star list given. Trying to generate one from mirage.\n')
+
+                try:
+                    from mirage.catalogs import create_catalog as cc
+                    from mirage.catalogs import catalog_generator as cg
+
+                    ra, dec = float(position[0]), float(position[1])
+                    tab = cg.PointSourceCatalog(ra=[ra], dec=[dec])
+                    filters = ['F277W', 'F356W', 'F380M', 'F430M', 'F444W', 'F480M', 'F090W', 'F115W', 'F158M', 'F140M', 'F150W', 'F200W']
+                    cats, filter_names = cc.get_all_catalogs(ra, dec, 250, instrument='niriss', filters=filters)
+                    tab.add_catalog(cats)
+                    starname = '{}_{}.txt'.format(ra, dec)
+                    tab.table.write(path+starname, format='ascii', overwrite=True)
+
+                except ImportError:
+                    raise("Could not import mirage. Make sure it is installed.")
+
             simple = not self.siaf
             stars_image, star_list = scene_image.make_star_image(
                 path+starname, position, self.filtername, path=psf_path,
